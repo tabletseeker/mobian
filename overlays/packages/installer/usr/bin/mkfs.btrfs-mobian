@@ -1,0 +1,12 @@
+#!/bin/sh
+# This script exists to create a snapshotable subvolume
+# for the BTRFS root partition.
+mkfs.btrfs -f -L 'root' $@
+targetdisk=$(echo "$@" | awk '{ print $NF }')
+
+mkdir -p /subvolume
+mount ${targetdisk} /subvolume
+btrfs subvolume create /subvolume/root
+btrfs subvolume set-default /subvolume/root
+umount /subvolume
+

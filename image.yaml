@@ -1,0 +1,128 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $family := or .family "sunxi" }}
+{{- $device := or .device "pinephone" }}
+{{- $partitiontable := or .partitiontable "gpt" }}
+{{- $filesystem := or .filesystem "ext4" }}
+{{- $environment := or .environment "phosh" -}}
+{{- $image := or .image "mobian" -}}
+{{- $imagesize := or .imagesize "6GB" }}
+{{- $miniramfs := or .miniramfs "false" }}
+{{- $zram := or .zram "false" -}}
+{{- $bootstart := or .bootstart "1MiB" }}
+{{- $nonfree := or .nonfree "false" -}}
+{{- $rootfs := or .rootfs "rootfs.tar.gz" }}
+{{- $password := or .password "1234" -}}
+{{- $crypt_password := or .crypt_password $password -}}
+{{- $crypt_root := or .crypt_root "false" -}}
+{{- $bootonroot := or .bootonroot "false" }}
+{{- $kernel := or .kernel "default" }}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: unpack
+    file: {{ $rootfs }}
+
+{{ if eq $nonfree "true" }}
+  - action: run
+    description: Enable non-free-firmware repos
+    chroot: true
+    script: scripts/setup-apt-nonfree.sh true
+{{ end }}
+
+  - action: recipe
+    recipe: include/partition-{{ $partitiontable }}.yaml
+    variables:
+      bootstart: {{ $bootstart }}
+      filesystem: {{ $filesystem }}
+      image: {{ $image }}
+      imagesize: {{ $imagesize }}
+      installer: "false"
+      bootonroot: {{ $bootonroot }}
+
+  - action: filesystem-deploy
+    description: Deploy filesystem onto image
+{{ if eq $crypt_root "true" }}
+    setup-fstab: false
+
+  - action: run
+    description: Encrypt root filesystem
+    label: setup-luks
+    script: scripts/setup-luks.sh {{ $crypt_password }} {{ $bootonroot }}
+
+  - action: recipe
+    recipe: include/packages-fde.yaml
+    variables:
+      debian_suite: {{ $debian_suite }}
+{{ end }}
+
+{{ if eq $filesystem "btrfs" }}
+  - action: apt
+    recommends: false
+    description: Install btrfs progs
+    packages:
+      - btrfs-progs
+{{ end }}
+
+{{ if eq $filesystem "f2fs" }}
+  - action: apt
+    recommends: false
+    description: Install F2FS tools
+    packages:
+      - f2fs-tools
+{{ end }}
+
+{{ if eq $zram "true" }}
+  - action: run
+    description: setup zram (fstab)
+    chroot: true
+    script: scripts/setup-zram-mounts.sh
+{{ end }}
+
+  - action: recipe
+    recipe: devices/{{ $family }}/packages-base.yaml
+    variables:
+      device: {{ $device }}
+      nonfree: {{ $nonfree }}
+      kernel: {{ $kernel }}
+      debian_suite: {{ $debian_suite }}
+
+  - action: recipe
+    recipe: devices/{{ $family }}/packages-{{ $environment }}.yaml
+    variables:
+      device: {{ $device }}
+
+{{ if eq $miniramfs "true" }}
+  - action: apt
+    recommends: true
+    description: install miniramfs
+    packages:
+      - miniramfs
+{{ end }}
+
+{{ if eq $crypt_root "true" }}
+# When building with fakemachine, the initrd crypttab is empty
+# We need this additional step which fully mounts /dev so cryptsetup
+# can create a proper crypttab
+  - action: run
+    description: Force initramfs update
+    chroot: true
+    script: scripts/update-initramfs.sh
+{{ end }}
+
+  - action: run
+    description: Cleanup filesystem
+    chroot: true
+    script: scripts/rootfs-cleanup.sh
+
+  - action: recipe
+    recipe: devices/{{ $family }}/bootloader.yaml
+    variables:
+      device: {{ $device }}
+      image: {{ $image }}
+      bootstart: {{ $bootstart }}
+      miniramfs: {{ $miniramfs }}

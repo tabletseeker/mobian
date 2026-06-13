@@ -1,0 +1,21 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $device := or .device "pinephone" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install device-specific packages for Phosh
+    packages:
+{{ if ne $device "pinetab" }}
+      - gnome-firmware
+      - phosh-phone
+      - mobile-broadband-provider-info
+      - firefox-esr-mobile-config
+{{ end }}
+      - imagemagick
+      - megapixels

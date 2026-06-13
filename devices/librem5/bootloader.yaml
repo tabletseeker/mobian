@@ -1,0 +1,13 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $device := or .device "librem5" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: run
+    description: Ensure we have a valid extlinux.conf
+    chroot: true
+    command: /etc/kernel/postinst.d/zz-u-boot-menu "$(linux-version list | tail -1)"

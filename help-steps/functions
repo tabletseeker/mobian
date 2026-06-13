@@ -1,0 +1,176 @@
+#!/bin/bash
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+device_args() {
+  case "${device}" in
+    "pinephone"|"pinetab"|"sunxi" )
+      family="sunxi"
+      ARGS="${ARGS} -t nonfree:true"
+      ;;
+    "pinephonepro"|"pinetab2"|"rockchip" )
+      family="rockchip"
+      ARGS="${ARGS} -t nonfree:true"
+      ;;
+    "librem5" )
+      family="librem5"
+      ARGS="${ARGS} -t nonfree:true"
+      ;;
+ 		"sdm845"|"sdm670"|"sm6350"|"sc7280"|"sm7150"|"qcom-wip" )
+      if [ "${device}" = "qcom-wip" ]; then
+        device="wip"
+      fi
+      family="qcom"
+      SECTSIZE="$(tomlq -r '.bootimg.pagesize' devices/qcom/configs/${device}.toml)"
+      ARGS="${ARGS} -e MKE2FS_DEVICE_SECTSIZE:${SECTSIZE} -t nonfree:true -t bootonroot:true"
+      ;;
+    "amd64"|"amd64-free" )
+      arch="amd64"
+      family="amd64"
+      comp="x86"
+      ARGS="${ARGS} -t imagesize:${imagesize} -t installersize:${installersize}"
+      if [ "${device}" = "amd64" ]; then
+        ARGS="${ARGS} -t nonfree:true"
+      fi
+      ;;
+    * )
+      echo "Unsupported device '${device}'"
+      exit 1
+      ;;
+  esac
+}
+
+package_args() {  
+  case "${device}" in
+		"amd64" )
+			PACKAGE_ARGS+=("amd64" "-t amd64_packages:true")
+			;;
+		"pinephone"|"pinetab"|"sunxi" )
+			PACKAGE_ARGS+=("phone/sunxi" "-t sunxi_packages:true")
+		 	;;
+		* )
+		  PACKAGE_ARGS+=("phone/main" "-t phone_packages:true")
+		  ;;
+  esac
+
+  while (( ${#PACKAGE_ARGS[@]} > 0 )); do
+    if [ -n "$( ls -A --ignore=".gitignore" "${PACKAGES}/${PACKAGE_ARGS[0]}" 2>/dev/null )" ]; then
+      ARGS+=" ${PACKAGE_ARGS[1]}"
+    fi
+
+    PACKAGE_ARGS=("${PACKAGE_ARGS[@]:2}")
+  done
+}
+
+naming_schemes() {
+	installfs_file="installfs-${arch}.tar.gz"
+
+	image_file="mobian-${device}-${environment}-$(date +%Y%m%d)"
+	if [ "$installer" ]; then
+	  image="installer"
+	  image_file="mobian-installer-${device}-${environment}-$(date +%Y%m%d)"
+	fi
+
+	rootfs_file="rootfs-${arch}-${environment}.tar.gz"
+	if echo "${ARGS}" | grep -q "nonfree:true"; then
+	  rootfs_file="rootfs-${arch}-${environment}-nonfree.tar.gz"
+fi
+}
+
+opt_args() {
+	if [ "${use_docker}" ]; then
+		DEBOS_CMD=docker
+		ARGS="run --rm --interactive --tty --device /dev/kvm --workdir /recipes \
+		          --mount type=bind,source=$(pwd),destination=/recipes \
+		          --security-opt label=disable godebos/debos ${ARGS}"
+	fi
+
+	ARGS="${ARGS} -t architecture:${arch} -t family:${family} -t device:${device} \
+		          -t partitiontable:${partitiontable} -t filesystem:${filesystem} \
+		          -t image:${image_file} -t rootfs:${rootfs_file} -t installfs:${installfs_file} \
+		          -t debian_suite:${debian_suite} -t suite:${suite} \
+		          --scratchsize=${scratchsize}"
+}
+
+misc_checks() {
+	# Cleanup previous artifacts if we're not re-using them
+	if [ ! "${image_only}" ]; then
+		rm -f "${rootfs_file}" "${installfs_file}" \
+		      "rootfs-${device}-${environment}.tar.gz"
+	fi
+
+	if [ -n "${ssh:-}" ] && [ ! -f overlays/ssh/authorized_keys ]; then
+		  echo "ssh selected but no authorized keys file, this won't end well"
+		  exit 1
+	fi
+}
+
+debos_rootfs() {
+	if [ ! "${image_only}" ] || [ ! -f "${rootfs_file}" ]; then
+		# Ensure subsequent artifacts are rebuilt too
+		rm -f "rootfs-${device}-${environment}.tar.gz"
+		${DEBOS_CMD} ${ARGS} rootfs.yaml
+	fi
+}
+
+debos_installfs() {
+	if [ "$installer" ]; then
+		if [ ! "${image_only}" ] || [ ! -f "${installfs_file}" ]; then
+		  ${DEBOS_CMD} ${ARGS} installfs.yaml
+		fi
+
+		if [ ! "${image_only}" ] || [ ! -f "rootfs-${device}-${environment}.tar.gz" ]; then
+		  ${DEBOS_CMD} ${ARGS} "rootfs-device.yaml"
+		fi
+		# Convert rootfs tarball to squashfs for inclusion in the installer image
+		[ -n "${comp}" ] || comp="arm"
+        rm -f "rootfs-${device}-${environment}.sqfs"
+		zcat "rootfs-${device}-${environment}.tar.gz" | tar2sqfs -c xz -b 1048576 -X "${comp}" "rootfs-${device}-${environment}.sqfs"
+	fi
+}
+
+debos_img() {
+	${DEBOS_CMD} ${ARGS} "$image.yaml"
+}
+
+debos_misc() {
+	if [ "$installer" ]; then
+		rm -f "rootfs-${device}-${environment}.sqfs"
+	fi
+
+	if [ ! "$no_blockmap" ] && [ -f "$image_file.img" ]; then
+		bmaptool create "$image_file.img" > "$image_file.img.bmap"
+	fi
+}
+
+debos_compress() {
+	if [ "$do_compress" ]; then
+		echo "Compressing ${image_file}..."
+		# FIX: Remove --fast and use -6 (standard) or -9 (extreme)
+		# This will take longer but will drop the size from 3GB to ~1.7GB
+		[ ! -f "${image_file}.img" ] || xz -T0 -9e --lzma2=dict=32MiB --keep --force --verbose "${image_file}.img"
+		[ ! -f "${image_file}.rootfs.img" ] || tar -c "${image_file}".*.img | xz -T0 -9e > "${image_file}.tar.xz"
+	fi
+}
+
+
+debos_sign() {
+	if [ -n "${sign:-}" ]; then
+	  truncate -s0 "${image_file}.sha256sums"
+	  if [ "$do_compress" ]; then
+		  extensions="img.xz tar.xz img.bmap"
+	  else
+		  extensions="*.img"
+	  fi
+
+	  for ext in ${extensions}; do
+		  for file in "${image_file}".${ext}; do
+		    sha256sum "${file}" >> "${image_file}.sha256sums"
+		  done
+	  done
+
+	  [ ! -f "${image_file}.sha256sums".asc ] || rm "${image_file}.sha256sums.asc"
+	  gpg -u "${sign}" --clearsign "${image_file}.sha256sums"
+	fi
+}

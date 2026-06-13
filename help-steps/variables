@@ -1,0 +1,61 @@
+#!/bin/bash
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+declare -A USER_ARGS=(
+["D"]="--debug-shell"
+["v"]="--verbose"
+["u"]="-t username:"
+["R"]="-t crypt_password:"
+["p"]="-t password:"
+["s"]="-t ssh:"
+["e"]="-t environment:"
+["H"]="-t hostname:"
+["h"]="-e http_proxy:"
+["f"]="-e ftp_proxy:"
+["m"]="--memory "
+["M"]="-t mirror:"
+["r"]="-t miniramfs:true"
+["C"]="-t contrib:true"
+["Z"]="-t zram:true"
+["c"]="-t crypt_root:true"
+["k"]="-t kernel:custom"
+["K"]="-t keyboard:true"
+["L"]="-t intel_chipset:true"
+)
+
+declare -a PACKAGE_ARGS=(
+"deb" "-t deb_packages:true"
+)
+
+device="pinephone"
+image="image"
+partitiontable="gpt"
+filesystem="ext4"
+environment="phosh"
+crypt_root=
+crypt_password=
+hostname=
+arch="arm64"
+do_compress=
+family=
+image_only=
+installer=
+zram=
+memory=
+mirror=
+password=
+use_docker=
+username=
+no_blockmap=
+ssh=
+debian_suite="forky"
+suite=
+contrib=
+sign=
+miniramfs=
+verbose=
+scratchsize="8G"
+imagesize="15GB"
+installersize="10GB"

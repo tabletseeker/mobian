@@ -1,0 +1,59 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $family := or .family "sunxi" }}
+{{- $nonfree := or .nonfree "false" -}}
+{{- $device := or .device "pinephone" }}
+{{- $environment := or .environment "phosh" -}}
+{{- $rootfs := or .rootfs "rootfs.tar.gz" }}
+{{- $miniramfs := or .miniramfs "false" }}
+{{- $kernel := or .kernel "default" }}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: unpack
+    file: {{ $rootfs }}
+
+{{ if eq $nonfree "true" }}
+  - action: run
+    description: Enable non-free-firmware repos
+    chroot: true
+    script: scripts/setup-apt-nonfree.sh true
+{{ end }}
+
+  - action: recipe
+    recipe: include/packages-fde.yaml
+    variables:
+      debian_suite: {{ $debian_suite }}
+
+  - action: recipe
+    recipe: devices/{{ $family }}/packages-base.yaml
+    variables:
+      device: {{ $device }}
+      kernel: {{ $kernel }}
+      nonfree: {{ $nonfree }}
+      debian_suite: {{ $debian_suite }}
+
+  - action: recipe
+    recipe: devices/{{ $family }}/packages-{{ $environment }}.yaml
+    variables:
+      device: {{ $device }}
+
+{{ if eq $miniramfs "true" }}
+  - action: apt
+    recommends: true
+    description: install miniramfs
+    packages:
+      - miniramfs
+{{ end }}
+
+  - action: run
+    description: Cleanup filesystem
+    chroot: true
+    script: scripts/rootfs-cleanup.sh
+
+  - action: pack
+    file: rootfs-{{ $device }}-{{ $environment }}.tar.gz

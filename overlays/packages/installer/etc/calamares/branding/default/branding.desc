@@ -1,0 +1,43 @@
+---
+componentName:  default
+
+welcomeStyleCalamares:   false
+
+# Should the welcome image (productWelcome, below) be scaled
+# up beyond its natural size?
+welcomeExpandingLogo:   true
+
+windowExpanding:    normal
+windowSize: 920px,630px
+windowPlacement: center
+
+sidebar: widget
+navigation: widget
+
+strings:
+    productName:         Mobian
+    shortProductName:    Mobian
+    version:             2026.04
+    shortVersion:        Mobian
+    versionedName:       Mobian 2026.04
+    shortVersionedName:  Mobian 2026.04
+    bootloaderEntryName: Mobian
+    productUrl:          https://github.com/tabletseeker/mobian
+    supportUrl:          https://github.com/tabletseeker/mobian
+    knownIssuesUrl:      https://github.com/tabletseeker/mobian/issues
+    releaseNotesUrl:     https://github.com/tabletseeker/mobian/releases
+    donateUrl:           https://github.com/tabletseeker/mobian
+
+images:
+    productLogo:         "mobian.png"
+    productIcon:         "mobian.png"
+    productWelcome:      "languages.png"
+
+slideshow:               "show.qml"
+slideshowAPI:            1
+
+style:
+   SidebarBackground:    "#bdc3c7"
+   SidebarText:          "#1F1F1F"
+   SidebarTextCurrent:    "#3498DB"
+   SidebarBackgroundCurrent: "#eff0f1"

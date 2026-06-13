@@ -1,0 +1,61 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $filesystem := or .filesystem "ext4" }}
+{{- $image := or .image "mobian-$device" -}}
+{{- $imagesize := or .imagesize "6GB" }}
+{{- $bootstart := or .bootstart "1MiB" }}
+{{- $installer := or .installer "false" }}
+{{- $bootonroot := or .bootonroot "false" }}
+
+{{- $rootstart := "512MiB" }}
+
+{{- if eq $bootonroot "true" }}
+{{-   $rootstart = $bootstart }}
+{{- end }}
+
+{{- $bootend := $rootstart }}
+
+{{- if eq $installer "true" }}
+{{-   $rootstart = "4.5GiB" }}
+{{- end }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: image-partition
+    imagename: {{ $image }}.img
+    imagesize: {{ $imagesize }}
+    partitiontype: msdos
+    mountpoints:
+      - mountpoint: /
+{{ if eq $installer "true" }}
+        partition: installer
+{{ else }}
+        partition: rootfs
+{{ end }}
+        options: [ "x-systemd.growfs" ]
+{{ if ne $bootonroot "true" }}
+      - mountpoint: /boot
+        partition: boot
+        options: [ "x-systemd.growfs" ]
+{{ end }}
+    partitions:
+{{ if ne $bootonroot "true" }}
+      - name: boot
+        fs: ext4
+        start: {{ $bootstart }}
+        end: {{ $bootend }}
+        flags: [ boot ]
+{{ end }}
+      - name: rootfs
+{{ if eq $installer "true" }}
+        fs: {{ $filesystem }}
+        start: {{ $bootend }}
+        end: {{ $rootstart }}
+      - name: installer
+{{ end }}
+        fs: {{ $filesystem }}
+        start: {{ $rootstart }}
+        end: 100%

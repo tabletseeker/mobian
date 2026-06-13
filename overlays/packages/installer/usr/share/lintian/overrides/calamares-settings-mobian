@@ -1,0 +1,3 @@
+# None of these should ever be executed outside of calamares, which is controlled by this package.
+calamares-settings-mobian: no-manual-page [usr/bin/*]
+calamares-settings-mobian: systemd-service-file-missing-documentation-key [lib/systemd/system/calamares-settings-mobian.service]

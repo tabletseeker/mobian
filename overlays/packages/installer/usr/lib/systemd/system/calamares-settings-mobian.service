@@ -1,0 +1,20 @@
+[Unit]
+Description=Calamares Framebuffer Session
+After=sockets.target
+
+[Service]
+Type=oneshot
+Environment="QT_STYLE_OVERRIDE=Fusion"
+Environment="QT_QUICK_CONTROLS_STYLE=Fusion"
+Environment="QT_IM_MODULE=qtvirtualkeyboard"
+Environment="QT_VIRTUALKEYBOARD_STYLE=Plasma"
+Environment="ONDEV_CIPHER=aes-xts-plain64"
+ExecStartPre=-/bin/plymouth quit
+# let the console output settle down
+ExecStart=/usr/bin/calamares-mobian-ondev
+StandardInput=null
+StandardOutput=journal+console
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

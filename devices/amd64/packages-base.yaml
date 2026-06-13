@@ -1,0 +1,62 @@
+{{- $architecture := or .architecture "amd64" -}}
+{{- $device := or .device "amd64" }}
+{{- $nonfree := or .nonfree "false" }}
+{{- $kernel := or .kernel "default" }}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install device-specific base packages
+    packages:
+      - grub-efi-amd64
+      - grub-common
+      - efibootmgr
+      - os-prober
+      - initramfs-tools
+      - grub-efi
+      {{ if eq $kernel "default" }}
+      - linux-image-amd64
+      {{ end }}
+      {{ if eq $nonfree "true" }}
+      - intel-microcode
+      - amd64-microcode
+      - firmware-amd-graphics
+      - firmware-misc-nonfree
+      - atmel-firmware
+      - bluez-firmware
+      - dahdi-firmware-nonfree
+      - firmware-ast
+      - firmware-atheros
+      - firmware-bnx2
+      - firmware-bnx2x
+      - firmware-brcm80211
+      - firmware-cavium
+      - firmware-intel-sound
+      - firmware-iwlwifi
+      - firmware-libertas
+      - firmware-linux-nonfree
+      - firmware-myricom
+      - firmware-netronome
+      - firmware-netxen
+      - firmware-qlogic
+      - firmware-realtek
+      - firmware-siano
+      - firmware-sof-signed
+      - firmware-zd1211
+      {{ end }}
+
+      # Conditional Release Packages
+      {{ if eq $debian_suite "bookworm" }}
+
+      {{ else }}
+      # Sid and Forky
+      - firmware-intel-graphics
+      - firmware-cirrus
+      - firmware-marvell-prestera
+      {{ end }}

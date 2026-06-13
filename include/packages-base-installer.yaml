@@ -1,0 +1,88 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install installer packages
+    packages:
+      - sudo
+      - locales
+      - lvm2
+      - ca-certificates
+
+      # --- Essential Phosh Core (Replaces phosh-full) ---
+      - phosh               # The Shell
+      - phoc                # The Compositor (Mandatory)
+      - squeekboard         # Keyboard (Mandatory for tablets)
+      - feedbackd           # Handles haptics/events
+      - mmsd-tng            # Basic mobile data daemon
+      - xwayland            # Required for Calamares to render
+      
+      # --- Essential GNOME/Phosh Desktop Environment ---
+      - gnome-console       # Terminal
+      - nautilus            # File Manager
+      - gnome-session       # The session manager
+      - gdm3                # Required for your "AutomaticLogin" script
+      - adwaita-icon-theme  # Without this, Phosh looks broken
+      - fonts-lato          # Standard font
+      - gsettings-desktop-schemas # Mandatory for wallpaper/theme overrides
+      
+      # --- Calamares & Qt6 Engine (The Logic & UI) ---
+      - calamares
+      - qml6-module-qtquick
+      - qml6-module-qtquick-controls
+      - qml6-module-qtquick-layouts
+      - qml6-module-qtquick-window
+      - qml6-module-qtcore
+      - qt6-wayland
+      - libqt6svg6          
+      - libqt6widgets6
+      
+      # --- The Python Bridge (Fixes Calamares "Not Working") ---
+      # Without these, Calamares cannot run its setup scripts
+      - python3-pyqt6
+      - python3-pyqt6.qtqml
+      - python3-pyqt6.qtquick
+
+      # --- Graphics ---
+      - libgl1-mesa-dri
+      - librsvg2-common
+      - wpasupplicant     # The backend that handles Wi-Fi security (WPA2/3)
+      - network-manager   # The "manager" that Phosh uses to find/connect to SSIDs
+      - gir1.2-nm-1.0     # The "bridge" Phosh needs to talk to NetworkManager
+      - e2fsprogs
+      - dosfstools
+      - squashfs-tools
+      - rsync
+      - plymouth
+      - plymouth-label
+      - systemd-timesyncd
+      - gnome-keyring
+      - network-manager-gnome
+      - squeekboard
+      - gnome-themes-extra-data
+      - at-spi2-core
+      
+      # --- Suite-Specific Versioned Libraries ---
+      {{ if eq $debian_suite "bookworm" }}
+      - libkpmcore12
+      - libyaml-cpp0.7
+      - libkf5coreaddons5
+      {{ else if eq $debian_suite "trixie" }}
+      - libkpmcore12
+      - libyaml-cpp0.8
+      - libkf6coreaddons6
+      {{ else }}
+      # Sid and Forky
+      - libkpmcore13
+      - libyaml-cpp0.8
+      - libkf6coreaddons6
+      {{ end }}
+
+

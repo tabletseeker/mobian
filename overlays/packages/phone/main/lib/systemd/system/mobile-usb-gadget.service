@@ -1,0 +1,11 @@
+[Unit]
+Description=Configure USB gadget
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/mobile-usb-gadget setup
+ExecStop=/usr/sbin/mobile-usb-gadget reset
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

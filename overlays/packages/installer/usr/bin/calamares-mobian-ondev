@@ -1,0 +1,62 @@
+#!/bin/bash
+set -xe
+# Script to start calamares correctly
+# Copyright 2020 Undef
+# Inspired by https://gitlab.com/postmarketOS/postmarketos-ondev/-/blob/master/ondev-boot.sh
+
+# why sleep 3s?
+echo "sleeping 3 seconds" && sleep 3s
+booted_from_disk=$(df -T / | tail -n 1 | awk '{print $1}' | sed -e 's:/dev/\(.*\)[0-9]$:\1:' -e 's:p$::')
+part_install="$(df -T / | awk '/^\/dev/ {print $1}')"
+part_target="$(echo "$part_install" | sed 's/3$/2/')"
+part_internal_target="$(lsblk -d -o KNAME -n | grep -v -e "zram" -e "${booted_from_disk}" -e sda -e "boot" | sed 's:.*:/dev/&:')"
+device_model_name="$(cat /proc/device-tree/model)"
+
+# generate a new UUID, as all images having the same boot UUID means the wrong boot can be altered.
+# https://gitlab.com/mobian1/issues/-/issues/235
+new_boot_uuid() {
+    if mountpoint /boot >/dev/null 2>/dev/null; then 
+        umount -f /boot
+    fi
+    part_boot="$(echo "$part_target" | sed 's/2$/1/')"
+    old_uuid="$(lsblk $part_boot -o UUID -n)"
+    # Requires a tty...
+    python3 -c "import pty; pty.spawn([\"e2fsck\", \"-f\", \"${part_boot}\"])"
+    yes | tune2fs -U random ${part_boot}
+    partprobe
+    new_uuid="$(lsblk $part_boot -o UUID -n)"
+    if [ "$new_uuid" == "$old_uuid" ]; then
+        echo "Failed to generate new boot filesystem UUID (part_boot: '$part_boot')"
+        exit 1
+    fi
+    sed -i "s/${old_uuid}/${new_uuid}/" /etc/fstab
+    mount ${part_boot} /boot
+}
+
+# configure mobile calamares extension
+config_mobile() {
+    sed -i "/^device:/d" /etc/calamares/modules/mobile.conf
+    echo "device: \"${device_model_name/#Pine64 /}\"" >> /etc/calamares/modules/mobile.conf
+
+    sed -i "/targetDeviceRoot/d" /etc/calamares/modules/mobile.conf
+    echo "targetDeviceRoot: ${part_target}" >> /etc/calamares/modules/mobile.conf
+    sed -i "/targetDeviceRootInternal/d" /etc/calamares/modules/mobile.conf
+    # This is the target root partition, not the whole device.
+    if [ -n "${part_internal_target}" ]; then
+        echo "targetDeviceRootInternal: ${part_internal_target}p2" >> /etc/calamares/modules/mobile.conf
+    fi
+}
+
+misc_setup() {
+    # Setup variables for prepare-internal-storage script
+    export INTERNAL_TARGET=${part_internal_target}
+    export EXTERNAL_SOURCE=$(echo ${part_target} | sed 's:p\?[0-9]$::' )
+}
+
+new_boot_uuid
+config_mobile
+misc_setup
+
+# Other environmental variables will be passed on from systemd unit file
+#exec /usr/bin/calamares -platform eglfs
+exec /usr/bin/calamares -d -platform linuxfb

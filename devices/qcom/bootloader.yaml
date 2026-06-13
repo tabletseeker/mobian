@@ -1,0 +1,24 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $device := or .device "sdm845" }}
+{{- $image := or .image "mobian-$device" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: run
+    description: Prepare boot images
+    chroot: true
+    script: bootloader.sh {{ $device }} {{ $image }}
+
+  - action: run
+    description: Extract boot images
+    chroot: false
+    script: extract-bootimg.sh {{ $device }} {{ $image }}
+
+  - action: run
+    description: Extract partitions
+    postprocess: true
+    script: extract-parts.sh {{ $image }}

@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup USB networking
+Requires=NetworkManager.service
+After=NetworkManager.service
+ConditionPathExists=!/etc/NetworkManager/system-connections/USB.nmconnection
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/mobile-usb-network-setup
+
+[Install]
+WantedBy=multi-user.target

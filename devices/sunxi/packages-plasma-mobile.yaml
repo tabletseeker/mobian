@@ -1,0 +1,43 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $device := or .device "pinephone" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install device-specific packages for Plasma Mobile
+    packages:
+{{ if ne $device "pinetab" }}
+      # mobian-plasma-mobile-base
+      - plasma-mobile-full
+      - plasma-mobile-core
+      - at-spi2-core
+      - fonts-noto-cjk
+      - fonts-noto-color-emoji
+      - fonts-noto-mono
+      - fonts-noto-ui-core
+      - mesa-va-drivers
+      - mesa-vdpau-drivers
+      - wayland-protocols
+      - qml-module-org-kde-qqc2breezestyle
+      - qtwayland5
+      - qt6-svg-plugins
+      - xdg-desktop-portal-kde
+      # plasma-mobile-phone
+      - plasma-mobile-pin
+      - mmsd-tng
+      - modemanager
+      - plasma-dialer
+      - spacebar
+      # mobian-phone-base
+      - mobile-broadband-provider-info
+      - firefox-esr-mobile-config
+      - millipixels
+      - firefox-esr-mobile-config
+{{ end }}
+      - imagemagick
+      - megapixels

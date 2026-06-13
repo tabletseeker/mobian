@@ -1,0 +1,138 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: calamares-extensions
+Upstream-Contact: Adriaan de Groot <groot@kde.org>
+Source: https://github.com/calamares/calamares-extensions
+
+Files: *
+Copyright: 2018-2022, Adriaan de Groot <groot@kde.org>
+License: GPL-3.0-or-later
+
+Files: .clang-format
+       .clang-format.base
+       .editorconfig
+       .gitignore
+       CHANGES
+       *.md
+       branding/kaos_branding/lang/CMakeLists.txt
+       modules/*/*.qrc
+       modules/*/*.desc
+       modules/*/*.conf
+       modules/os-nixos/tests/*
+Copyright: 2018-2022, Adriaan de Groot <groot@kde.org>
+License: CC0-1.0
+
+Files: branding/default/show.qml
+       branding/fancy/show.qml
+       branding/kaos_branding/show.qml
+Copyright: 2015, Teo Mrnjavac <teo@kde.org>
+           2018, Adriaan de Groot <groot@kde.org>
+License: GPL-3.0-or-later
+
+Files: branding/default-mobile/*
+       modules/mobile/*
+Copyright: 2020, Oliver Smith <ollieparanoid@postmarketos.org>
+License: GPL-3.0-or-later
+
+Files: branding/image-slideshow/*
+Copyright: 2021, Adriaan de Groot <groot@kde.org>
+License: BSD-2-Clause
+
+Files: branding/samegame/*
+Copyright: 2017-2018, The Qt Company Ltd
+License: BSD-3-clause
+
+Files: CMakeModules/*
+       modules/flatpakinfo/CMakeLists.txt
+Copyright: 2014, Teo Mrnjavac <teo@kde.org>
+           2021, Adriaan de Groot <groot@kde.org>
+License: BSD-2-Clause
+
+Files: ci/*
+Copyright: 2014, Aurélien Gâteau <agateau@kde.org>
+           2018-2019, Adriaan de Groot <groot@kde.org>
+License: BSD-2-Clause
+
+Files: debian/*
+Copyright: 2020-2022, Jarrah Gosbell <debian@undef.tools>
+           2020-2022, Arnaud Ferraris <aferraris@debian.org>
+License: GPL-3.0-or-later
+
+Files: modules/flatpakinfo/*.cpp
+       modules/flatpakinfo/*.h
+Copyright: 2023, Sławomir Lach <slawek@lach.art.pl>
+License: GPL-3.0-or-later
+
+Files: modules/mobile/mobile.conf
+       modules/mobile/mobile.qrc
+Copyright: 2020, Oliver Smith <ollieparanoid@postmarketos.org>
+License: CC0-1.0
+
+Files: modules/refind/*
+Copyright: 2021, Anke Boersma <demm@kaosx.us>
+License: CC0-1.0
+
+Files: modules/refind/main.py
+Copyright: 2021, Anke Boersma <demm@kaosx.us>
+License: GPL-3.0-or-later
+
+License: GPL-3.0-or-later
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ .
+ On Debian GNU/Linux systems, the complete text of the GNU General Public
+ License version 3 can be found in `/usr/share/common-licenses/GPL-3'.
+
+License: BSD-2-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ .
+ 1) Redistributions of source code must retain the above copyright notice,
+ this list of conditions and the following disclaimer.
+ .
+ 2) Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
+ .
+ 3) Neither the name of the ORGANIZATION nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: CC0-1.0
+ To the extent possible under law, the author(s) have dedicated all
+ copyright and related and neighboring rights to this software to the public
+ domain worldwide. This software is distributed without any warranty.
+ .
+ On Debian systems, the complete text of the CC0 license, version 1.0,
+ can be found in /usr/share/common-licenses/CC0-1.0.

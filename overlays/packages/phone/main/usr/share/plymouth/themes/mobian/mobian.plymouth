@@ -1,0 +1,9 @@
+[Plymouth Theme]
+Name=Mobian
+Description=High-Resolution Production Theme for Mobile Devices
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/mobian
+ScriptFile=/usr/share/plymouth/themes/mobian/mobian.script
+

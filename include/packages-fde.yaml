@@ -1,0 +1,25 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install packages for full disk encryption
+    packages:
+      - cryptsetup-initramfs
+      {{ if eq $debian_suite "bookworm" }}
+      # Standard Bookworm mobile unlock path
+      - plymouth-label
+      - libinput10
+      - libxkbcommon0
+      {{ else }}
+      # Modern mobile unlock path (Trixie/Sid/Forky)
+      - unl0kr 
+      - libinih1
+      - libinput10
+      {{ end }}
