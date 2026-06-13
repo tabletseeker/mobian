@@ -1,0 +1,43 @@
+[bootimg]
+base = 0x0
+kernel = 0x8000
+ramdisk = 0x1000000
+second = 0
+tags = 0x100
+pagesize = 4096
+
+[[device]]
+vendor = "google"
+model = "sunfish"
+
+[[device]]
+vendor = "xiaomi"
+model = "davinci"
+variant = "samsung"
+
+[[device]]
+vendor = "xiaomi"
+model = "davinci"
+variant = "visionox"
+
+[[device]]
+vendor = "xiaomi"
+model = "surya"
+variant = "huaxing"
+
+[[device]]
+vendor = "xiaomi"
+model = "surya"
+variant = "tianma"
+
+[[device]]
+vendor = "xiaomi"
+model = "sweet"
+
+[[device]]
+vendor = "xiaomi"
+model = "toco"
+
+[[device]]
+vendor = "xiaomi"
+model = "tucana"

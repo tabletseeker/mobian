@@ -1,0 +1,189 @@
+name: Build Mobian
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      device:
+        description: 'Target Device'
+        required: true
+        type: choice
+        options:
+          - amd64
+          - pinephone
+          - pinephonepro
+          - librem5
+          - pinetab
+        default: amd64
+      build_type:
+        description: 'Image Type'
+        required: true
+        type: choice
+        options:
+          - regular
+          - installer
+        default: regular
+      suite:
+        description: 'Suite'
+        required: true
+        type: choice
+        options:
+          - sid
+          - forky
+          - trixie
+          - bookworm
+        default: forky
+      use_keyboard:
+        description: 'Default On-Screen-Keyboard?'
+        required: false
+        type: boolean
+        default: true
+      use_intel:
+        description: 'Intel Chipset Support?'
+        required: false
+        type: boolean
+        default: false
+      custom_kernel_url:
+        description: 'Custom Kernel URL'
+        required: false
+        type: string
+        default: ''
+      create_release:
+        description: 'Create a formal GitHub Release?'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write 
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Fallbacks for automated git tag pushes
+  DEFAULT_DEVICE: 'amd64'
+  DEFAULT_SUITE: 'forky'
+  DEFAULT_BUILD_TYPE: 'regular'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Fast Free Space
+        run: |
+          sudo rm -rf /usr/local/lib/android & 
+          sudo rm -rf /usr/share/dotnet &
+          wait
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debos bmap-tools squashfs-tools-ng xz-utils tar qemu-user-static wget
+
+      - name: Process Custom Kernel
+        if: github.event.inputs.custom_kernel_url != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          URL="${{ github.event.inputs.custom_kernel_url }}"
+          
+          # Check if the URL is a standard GitHub Release Page
+          if [[ "$URL" == *"github.com"* && "$URL" == *"/releases/tag/"* ]]; then
+            echo "Detected GitHub Release page. Processing via GitHub CLI..."
+            
+            # FIX: Included the trailing slash in the match pattern to clean up the path format
+            REPO_PATH=$(echo "$URL" | sed -E 's|https://github.com/||; s|/releases/tag/.*||')
+            
+            # 2. Extract tag name (e.g. debian-6.19.8-3)
+            KERNEL_TAG="${URL%*/}"
+            KERNEL_TAG="${KERNEL_TAG##*/}"
+            
+            # 3. Download via GitHub API
+            gh release download "$KERNEL_TAG" --repo "$REPO_PATH" --pattern "linux-headers-*.deb" --dir kernel/ --clobber
+            gh release download "$KERNEL_TAG" --repo "$REPO_PATH" --pattern "linux-image-*.deb" --dir kernel/ --clobber
+          
+          else
+            echo "Detected generic web URL. Processing via wget..."
+            
+            # Download files directly matching the pattern from an index directory
+            wget -r -l1 -nd -A "linux-headers-*.deb,linux-image-*.deb" -P kernel/ "$URL" --no-check-certificate || true
+            
+            # If the URL is a direct link to a single .deb file instead of a listing, download it directly
+            if [[ "$URL" == *".deb" ]]; then
+              wget -P kernel/ "$URL" --no-check-certificate
+            fi
+          fi
+
+          echo "Final contents of the kernel directory:"
+          ls -la kernel/
+
+      - name: Run Build Script
+        run: |
+          find . -name "*.sh" -exec chmod +x {} +
+          
+          # Handle variables securely supporting both tag pushes and manual trigger forms
+          DEVICE="${{ github.event.inputs.device }}"
+          SUITE="${{ github.event.inputs.suite }}"
+          BUILD_TYPE="${{ github.event.inputs.build_type }}"
+          
+          : "${DEVICE:=${{ env.DEFAULT_DEVICE }}}"
+          : "${SUITE:=${{ env.DEFAULT_SUITE }}}"
+          : "${BUILD_TYPE:=${{ env.DEFAULT_BUILD_TYPE }}}"
+          
+          # Setup base arguments
+          ARGS=("-t" "$DEVICE" "-x" "$SUITE" "-Q" "15G" "-z" "-v")
+          
+          # Conditional boolean toggles 
+          [ "$BUILD_TYPE" = "installer" ] && ARGS+=("-o")
+          [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ] && ARGS+=("-K")
+          [ "${{ github.event.inputs.use_intel }}" = "true" ] && ARGS+=("-L")
+          [ -n "${{ github.event.inputs.custom_kernel_url }}" ] && ARGS+=("-k")
+          
+          sudo ./build.sh "${ARGS[@]}"
+          
+          # Track name for subsequent actions
+          RAW_NAME=$(ls mobian-*.img.xz | head -n 1 | sed 's/.img.xz//')
+          echo "IMAGE_NAME=$RAW_NAME" >> $GITHUB_ENV
+
+      - name: Generate Checksums
+        run: |
+          sha256sum *.img.xz > "${{ env.IMAGE_NAME }}.sha256sums"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_NAME }}
+          path: |
+            *.img.xz
+            *.img.bmap
+            *.sha256sums
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Determine tag name based on context
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ -n "${{ github.event.inputs.custom_kernel_url }}" ]; then
+              TAG_NAME="${{ env.IMAGE_NAME }}-custom-full"
+            else
+              TAG_NAME="${{ env.IMAGE_NAME }}-full"
+            fi
+          else
+            TAG_NAME="${{ github.ref_name }}"
+            [ -n "${{ github.event.inputs.custom_kernel_url }}" ] && TAG_NAME="${TAG_NAME}-custom"
+          fi
+
+          # 2. Create and upload to the release
+          gh release create "$TAG_NAME" \
+            --title "$TAG_NAME" \
+            --generate-notes || echo "Release already exists"
+
+          gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
+
+

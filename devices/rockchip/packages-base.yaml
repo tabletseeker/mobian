@@ -1,0 +1,21 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $device := or .device "pinephonepro" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install device-specific base packages
+    packages:
+      - eg25-manager
+      - firmware-brcm80211
+      - firmware-misc-nonfree
+      - network-manager
+      - pinephone-tweaks
+      - systemd-zram-generator
+      - u-boot-menu
+      - rsync

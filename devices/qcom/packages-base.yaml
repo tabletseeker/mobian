@@ -1,0 +1,43 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $device := or .device "sdm845" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: run
+    chroot: true
+    description: Drop systemd-repart configuration
+    command: rm -rf /etc/repart.d/
+
+  - action: apt
+    recommends: false
+    description: Install device-specific base packages
+    packages:
+      - gstreamer1.0-plugins-base-apps
+      - libcamera-ipa
+      - libspa-0.2-libcamera
+      - yq
+{{- if ne $device "wip" }}
+      - {{ $device }}-support
+{{- else }}
+      - qcom-support-common
+      - openssh-server
+
+  - action: overlay
+    description: Copy additional packages to image
+    source: packages
+    destination: /srv
+
+  - action: run
+    chroot: true
+    description: Install additional packages
+    command: dpkg -i /srv/*.deb
+
+  - action: overlay
+    description: Add droid-juicer configuration to image
+    source: droid-juicer
+    destination: /usr/share/droid-juicer/configs
+{{- end }}

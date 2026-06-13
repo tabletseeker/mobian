@@ -1,0 +1,114 @@
+#!/bin/sh
+set -x
+# Ensure the kernel's partition list is up-to-date
+partprobe
+
+# Identify installer partition
+installpart=$(lsblk -n -o kname,mountpoint | grep ' /$' | awk '{ print $1 }')
+installdisk="$(echo ${installpart} | sed 's:p\?[0-9]$::' )"
+installuuid=$(lsblk -n -o uuid /dev/"${installpart}")
+# Identify internal target drive
+internal_target_disk=$(echo "${INTERNAL_TARGET}")
+# Identify target root partition
+rootpart=$(lsblk -n -o kname,mountpoint | grep ' /tmp/calamares-root' | awk '{ print $1 }')
+if [ "${rootpart}" = "dm-0" ]; then
+    rootpart=$(lsblk -J | parent_blk '/tmp/calamares-root')
+    if echo "${rootpart}" | grep -qE "(mmcblk|nvme)"; then
+        rootpart="${rootpart}p2"
+    else
+        rootpart="${rootpart}2"
+    fi
+fi
+rootdisk="$(echo ${rootpart} | sed 's:p\?[0-9]$::' )"
+
+external_to_internal=""
+if [ "${internal_target_disk}" = "${installdisk}" ]; then
+    # Booted from eMMC
+    external_to_internal=false
+elif [ "${installdisk}" = "${rootdisk}" ]; then
+    # Installing SD -> SD
+    external_to_internal=false
+else
+    external_to_internal=true
+fi
+
+# Mount filesystems required to chroot into the installed system
+mount --bind /dev /mnt/install/dev
+mount --bind /sys /mnt/install/sys
+mount --bind /proc /mnt/install/proc
+bootpart=""
+if [ "${external_to_internal}" = true ]; then
+    mount "${internal_target_disk}p1" /mnt/install/boot
+    bootpart=$(mount | grep ' /mnt/install/boot' | awk '{ print $1 }')
+else
+    mount --bind /boot /mnt/install/boot
+    bootpart=$(mount | grep ' /boot' | awk '{ print $1 }')
+fi
+
+# If the system partition is encrypted, $rootpart is a /dev/mapper device
+# `lsblk -n -s` will give the list of parent devices, for example:
+#    mmcblk0    disk
+#    mmcblk0p2  part
+#    luksdev    crypt
+# The following command retrieves the UUID of the underlying physical partition,
+# which is not always the root filesystem's UUID
+rootuuid=$(lsblk -n -s -o uuid,type "/dev/${rootpart}" | grep 'part' | awk '{ print $1 }')
+bootuuid=$(lsblk -n -s -o uuid,type "${bootpart}" | grep 'part' | awk '{ print $1 }')
+rootfs=$(findmnt --noheadings --output FSTYPE /mnt/install)
+fspassno="1"
+if [ "${rootfs}" = "btrfs" ]; then
+    fspassno="0"
+fi
+if lsblk -o type | grep -q 'crypt'; then
+    echo "calamares_crypt UUID=${rootuuid} none luks,keyscript=/usr/share/initramfs-tools/scripts/unl0kr-keyscript" >> /mnt/install/etc/crypttab
+    # Configures unl0kr to attempt to delete the above line on remove
+    printf "unl0kr unl0kr/prerm-config boolean true\nunl0kr unl0kr/prerm-config seen false" | chroot /mnt/install debconf-set-selections
+    sed "s:UUID=[0-9a-f-]*\s*/\s*ext4\s*defaults,x-systemd.growfs\s*[0-2]\s*[0-2]:/dev/mapper/calamares_crypt / ${rootfs} defaults,x-systemd.growfs 0 ${fspassno}:g" /etc/fstab > /mnt/install/etc/fstab
+    chroot /mnt/install/ update-initramfs -u
+else
+    # This is a onetime change which will be perpetuated by the rootpart's fstab
+    sed "s:${installuuid}\s*/\s*ext4\s*defaults,x-systemd.growfs\s*[0-2]\s*[0-2]:${rootuuid} / ${rootfs} defaults,x-systemd.growfs 0 ${fspassno}:g" /etc/fstab > /mnt/install/etc/fstab
+    # Remove unnecessary encryption-related packages as they result in a very
+    # large initramfs; this action will trigger an initramfs update
+    chroot /mnt/install/ dpkg -r cryptsetup cryptsetup-initramfs unl0kr
+fi
+
+# Install the pinephone-tweak-vccq package if running on a compatible installer
+if [ -f /var/lib/mobian-pinephone-tweaks-vccq.deb ] && \
+    grep -q "pine64,pinephone-" /proc/device-tree/compatible && \
+    [ -f /proc/device-tree/soc/mmc@1c11000/mmc-hs200-1_8v ]; then
+    # Install configuration and dtbo
+    cp /var/lib/mobian-pinephone-tweaks-vccq.deb /mnt/install/var/lib/mobian-pinephone-tweaks-vccq.deb && \
+    chroot /mnt/install dpkg -i /var/lib/mobian-pinephone-tweaks-vccq.deb && \
+    rm -f /mnt/install/var/lib/mobian-pinephone-tweaks-vccq.deb
+fi
+
+if [ -x /mnt/install/sbin/update-miniramfs ]; then
+    chroot /mnt/install/ update-miniramfs -u
+fi
+
+# Update initramfs and extlinux.conf
+chroot /mnt/install/ u-boot-update
+
+if [ ${external_to_internal} = false ]; then
+    # Identify installer partition's parent disk
+    installdev=$(lsblk -n -s -o kname,type "/dev/${installpart}" | grep 'disk' | awk '{ print $1 }')
+
+    # Identify installer partition number
+    installpartnum=$(echo "${installpart}" | sed "s/${installdev}p\?//")
+
+    # Delete installer partition
+    sfdisk --delete "/dev/${installdev}" "${installpartnum}"
+    # executed this way to preserve script output
+    bash -c "sleep 5s && reboot" &
+else
+    # Configure new boot partition in fstab
+    sed -i "/\/boot/d" /mnt/install/etc/fstab # Delete the installers boot partition from the target fstab
+    bootuuid=$(lsblk -n -s -o uuid "${internal_target_disk}p1" | tr -d "\n")
+    echo "UUID=${bootuuid}      /boot   ext4    defaults        0       2" >> /mnt/install/etc/fstab
+    if [ -x /mnt/install/sbin/update-miniramfs ]; then
+        chroot /mnt/install/ update-miniramfs -u
+    fi
+    # executed this way to preserve script output
+    bash -c "sleep 5s && poweroff" &
+fi

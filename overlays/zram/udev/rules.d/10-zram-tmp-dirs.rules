@@ -1,0 +1,2 @@
+KERNEL=="zram1", SUBSYSTEM=="block", ACTION=="add", ATTR{disksize}="128M", RUN+="/sbin/mkfs.ext4 -O ^has_journal $env{DEVNAME}", TAG+="systemd"
+KERNEL=="zram2", SUBSYSTEM=="block", ACTION=="add", ATTR{disksize}="128M", RUN+="/sbin/mkfs.ext4 -O ^has_journal $env{DEVNAME}", TAG+="systemd"

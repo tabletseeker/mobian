@@ -1,0 +1,91 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install installer packages
+    packages:
+      - sudo
+      - locales
+      - lvm2
+      - ca-certificates
+
+      # --- Environment ---
+      - cage
+      - xwayland
+      - wlr-randr
+      - seatd
+      - fonts-lato
+      - udisks2
+      - dbus
+      - python3-gi
+      - polkitd
+      - pkexec
+      - libpam-systemd
+      - libgl1-mesa-dri
+      - librsvg2-common
+      - wvkbd
+      - foot
+
+       # --- User Provisioning Core Tools ---
+      - adduser
+      - passwd
+      - login
+      - libpam-modules
+
+      # --- Calamares & Qt6 Engine (The Logic & UI) ---
+      - calamares
+      - qml6-module-qtquick
+      - qml6-module-qtquick-controls
+      - qml6-module-qtquick-layouts
+      - qml6-module-qtquick-window
+      - qml6-module-qtcore
+      - qt6-wayland
+      - libqt6svg6          
+      - libqt6widgets6
+      
+      # --- The Python Bridge (Fixes Calamares "Not Working") ---
+      # Without these, Calamares cannot run its setup scripts
+      - python3-pyqt6
+      - python3-pyqt6.qtqml
+      - python3-pyqt6.qtquick
+
+      # --- Graphics ---
+      - libgl1-mesa-dri
+      - librsvg2-common
+      - wpasupplicant     # The backend that handles Wi-Fi security (WPA2/3)
+      - network-manager   # The "manager" that Phosh uses to find/connect to SSIDs
+      - e2fsprogs
+      - dosfstools
+      - squashfs-tools
+      - rsync
+      - plymouth
+      - plymouth-label
+      - systemd-timesyncd
+      - at-spi2-core
+      
+      # --- Suite-Specific Versioned Libraries ---
+      {{ if eq $debian_suite "bookworm" }}
+      - libkpmcore12
+      - libyaml-cpp0.7
+      - libkf5coreaddons5
+      {{ else if eq $debian_suite "trixie" }}
+      - libkpmcore12
+      - libyaml-cpp0.8
+      - libkf6coreaddons6
+      - libsfdo0
+      {{ else }}
+      # Sid and Forky
+      - libkpmcore13
+      - libyaml-cpp0.8
+      - libkf6coreaddons6
+      - libsfdo0
+      {{ end }}
+
+

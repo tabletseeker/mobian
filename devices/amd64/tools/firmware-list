@@ -1,0 +1,36 @@
+#!/bin/sh
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+set -e
+
+# This file contains the list of all packages from the latest testing netinst image
+CURRENT_LIST="https://cdimage.debian.org/cdimage/daily-builds/daily/current/amd64/list-cd/debian-testing-amd64-netinst.list.gz"
+
+# Firmware packages contain either "firmware" or "microcode" in their name
+# (ref: https://salsa.debian.org/images-team/debian-cd/-/blob/master/tools/generate_firmware_task#L8)
+FW_LIST="$(curl $CURRENT_LIST 2>/dev/null | zcat | grep -E 'firmware|microcode' | sort)"
+
+EXCLUDED="
+    firmware-b43-installer
+    firmware-b43legacy-installer
+    firmware-ipw2x00
+    firmware-ivtv
+    firmware-realtek-rtl8723cs-bt
+"
+
+for fw in $FW_LIST; do
+    # Entries are .deb filenames so far, extract the package name
+    fwname="$(echo $fw | cut -d '_' -f1)"
+    for exc in $EXCLUDED; do
+        if echo $fwname | grep -q $exc; then
+            fwname=""
+            break
+        fi
+    done
+    # Output entry properly formatted for direct copy/pasting
+    if [ "$fwname" ]; then
+        echo "      - $fwname"
+    fi
+done

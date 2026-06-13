@@ -1,0 +1,12 @@
+{{- $architecture := or .architecture "amd64" -}}
+{{- $device := or .device "efi" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  # Nothing to be done, but we need an action anyway
+  - action: run
+    command: true

@@ -1,0 +1,99 @@
+{{- $architecture := or .architecture "amd64" -}}
+{{- $filesystem := or .filesystem "ext4" }}
+{{- $device := or .device "standardpc" -}}
+{{- $image := or .image (printf "mobian-%s" $device) -}}
+{{- $imagesize := or .imagesize "15GB" }}
+{{- $bootstart := or .bootstart "1MiB" }}
+{{- $installer := or .installer "true" }}
+{{- $bootonroot := or .bootonroot "false" }}
+
+{{- $espend := $bootstart }}
+{{- $has_esp_partition := "false" }}
+{{- $parttype := "invalid" }}
+{{- $rootstart := "512MiB" }}
+
+# FIX 1: Mandatory EFI System Partition GUID
+{{- $esp_guid := "c12a7328-f81f-11d2-ba4b-00a0c93ec93b" }}
+
+{{- if eq $architecture "amd64" }}
+{{-   $has_esp_partition = "true" }}
+{{-   $parttype = "4f68bce3-e8cd-4db1-96e7-fbcaf984b709" }}
+{{- else if eq $architecture "arm64" }}
+{{-   $has_esp_partition = "true" }}
+{{-   $parttype = "b921b045-1df0-41c3-af44-4c6f280d3fae" }}
+{{- else if eq $architecture "armhf" }}
+{{-   $parttype = "69dad710-2ce4-4e3c-b16c-21a1d49abed3" }}
+{{- else if eq $architecture "riscv64" }}
+{{-   $parttype = "72ec70a6-cf74-40e6-bd49-4bda08e8f224" }}
+{{- end }}
+
+{{- if eq $has_esp_partition "true" }}
+{{-   $espend = "512MiB" }}
+{{-   $rootstart = "1GiB" }}
+{{- end }}
+
+{{- if eq $bootonroot "true" }}
+{{-   $rootstart = $espend }}
+{{- end }}
+
+{{- $bootend := $rootstart }}
+
+{{- if eq $installer "true" }}
+{{-   $rootstart = "65%" }}
+{{- end }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: image-partition
+    imagename: {{ $image }}.img
+    imagesize: {{ $imagesize }}
+    partitiontype: gpt
+    mountpoints:
+      - mountpoint: /
+        partition: rootfs
+        options: [ "x-systemd.growfs" ]
+{{ if ne $bootonroot "true" }}
+      - mountpoint: /boot
+        partition: boot
+        options: [ "x-systemd.growfs" ]
+{{ end }}
+{{ if eq $has_esp_partition "true" }}
+      - mountpoint: /boot/efi
+        partition: esp
+{{ end }}
+    partitions:
+{{ if eq $has_esp_partition "true" }}
+      - name: esp
+        fs: vfat
+        start: {{ $bootstart }}
+        end: {{ $espend }}
+        flags: [ esp, boot ]
+        parttype: {{ $esp_guid }}
+{{ end }}
+{{ if ne $bootonroot "true" }}
+      - name: boot
+        fs: ext4
+        start: {{ $espend }}
+        end: {{ $bootend }}
+        flags: [ boot ]
+        # FIX: Added ^orphan_file to prevent GRUB from hanging during filesystem probe
+        mkfs-options: [ "-O", "^metadata_csum_seed,^64bit,^orphan_file" ]
+{{ end }}
+      - name: rootfs
+        fs: {{ $filesystem }}
+        start: {{ $bootend }}
+{{ if eq $installer "true" }}
+        end: {{ $rootstart }}
+      - name: installer
+        fs: {{ $filesystem }}
+        start: {{ $rootstart }}
+{{ end }}
+        end: 100%
+        parttype: {{ $parttype }}
+        # FIX: Added ^orphan_file to prevent GRUB from hanging during filesystem probe
+        mkfs-options: [ "-O", "^metadata_csum_seed,^64bit,^orphan_file" ]
+

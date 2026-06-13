@@ -1,0 +1,110 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install Phosh packages
+    packages:
+      # mobian-phosh-base
+      - phosh-full
+      - phosh-core
+      - feedbackd-device-themes
+      - at-spi2-core
+      - iio-sensor-proxy
+      - fonts-noto
+      - fonts-noto-cjk
+      - fonts-noto-color-emoji
+      - fonts-noto-mono
+      - fonts-noto-ui-core
+    # - mesa-vdpau-drivers
+      - wayland-protocols
+      - libgdk-pixbuf2.0-bin
+      - libcanberra-gtk3-module
+      - gnome-themes-extra-data
+      - xdg-desktop-portal-gtk
+      - xdg-desktop-portal-wlr
+      - xdg-user-dirs
+      # mobian-tweaks-phosh
+      - adduser
+      - dconf-cli
+      - feedbackd
+      - dconf-gsettings-backend
+      # mobian-tweaks-common
+      - dconf-gsettings-backend
+      - adduser
+      # mobile-tweaks-common
+      - dconf-gsettings-backend
+      - adduser
+      # mobian-phosh-extras
+      - fwupd
+      - gthd
+      - qtwayland5
+      - qt6-wayland
+      - phosh-full
+      # mobian-multimedia
+      - ffmpeg
+      - gstreamer1.0-gl
+      - gstreamer1.0-nice
+      - gstreamer1.0-pipewire
+      - gstreamer1.0-plugins-good
+      - pipewire-libcamera
+      - rygel
+      - cracklib-runtime # needed for pw change in UI, but g-c-c only recommends it
+      - chatty
+      - endeavour
+      - epiphany-browser
+      - firefox-esr
+      - geary
+      - gnome-calculator
+      - gnome-calendar
+      - gnome-console
+      - gnome-maps
+      - gnome-software
+      - gnome-sound-recorder
+      - gnome-text-editor
+      - gnome-usage
+      - gnome-weather
+      - lollypop
+      - phosh-mobile-settings
+      - phosh-plugins
+      - phosh-tour
+      - portfolio-filemanager
+      - powersupply-gtk
+      - webext-ublock-origin-firefox
+
+      # Conditional Release Packages      
+      {{ if eq $debian_suite "bookworm" }}
+      # Bookworm (Stable)
+      - network-manager-gnome
+      - eog
+      - evince
+      - gnome-backgrounds
+      {{ else }}
+      # Trixie (stable) and Forky (testing)
+      - network-manager-applet
+      - loupe
+      - papers
+      - phrog
+      - phosh-wallpapers
+      - sound-theme-phosh
+      - libspa-0.2-libcamera
+      - xfconf-gsettings-backend
+      - gnome-software-plugin-deb
+      - gnome-software-plugin-flatpak
+      {{ end }}
+      #Sid Exceptions
+      {{ if ne $debian_suite "sid" }}
+      - mesa-va-drivers
+      {{ end }}
+
+  - action: run
+    description: Disable getty in the Phosh environment
+    chroot: true
+    command: systemctl disable getty@.service
+

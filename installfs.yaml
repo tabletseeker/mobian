@@ -1,0 +1,85 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $username := or .username "mobian" -}}
+{{- $password := or .password "1234" -}}
+{{- $hostname := or .hostname "mobian" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+{{- $suite := or .suite $debian_suite -}}
+{{- $environment := or .environment "phosh" -}}
+{{- $installfs := or .installfs "installfs.tar.gz" }}
+{{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
+{{- $calamares := or .calamares "true" -}}
+{{- $keyboard := or .keyboard "false" }}
+{{- $kernel := or .kernel "default" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: debootstrap
+    suite: {{ $debian_suite }}
+    components:
+      - main
+    mirror: {{ $mirror }}
+    variant: minbase
+
+  - action: apt
+    description: Install setup packages
+    recommends: false
+    packages:
+      - ca-certificates
+      - apt-transport-https
+
+  - action: run
+    description: Setup debian repository
+    chroot: true
+    script: scripts/setup-apt.sh {{ $debian_suite }} {{ $suite }}
+    
+  - action: run
+    description: Enable non-free-firmware repos
+    chroot: true
+    script: scripts/setup-apt-nonfree.sh true
+    
+{{ if eq $kernel "custom" }}
+  - action: apt
+    description: Install dependencies
+    recommends: false
+    packages:
+      - zstd
+      - initramfs-tools
+
+  - action: overlay
+    description: Move kernel files
+    source: kernel/
+    destination: /kernel/
+
+  - action: run
+    description: Install custom kernel
+    chroot: true
+    script: scripts/install_kernel.sh
+{{ end }}
+
+  - action: recipe
+    recipe: include/packages-base-installer.yaml
+    variables:
+      debian_suite: {{ $debian_suite }}
+
+{{ if eq $calamares "true" }}
+  - action: overlay
+    description: Move calamares files
+    source: overlays/packages/installer
+{{ end }}
+
+  - action: run
+    description: Set up default user
+    chroot: true
+    script: scripts/setup-user.sh {{ $username }} {{ $password }}
+
+  - action: run
+    description: Set up installer
+    chroot: true
+    script: scripts/setup-installer.sh {{ $username }} {{ $debian_suite }} {{ $environment }} {{ $keyboard }}
+
+  - action: pack
+    file: {{ $installfs }}

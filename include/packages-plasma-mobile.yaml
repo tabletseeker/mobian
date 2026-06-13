@@ -1,0 +1,32 @@
+{{- $architecture := or .architecture "arm64" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install Plasma Mobile packages
+    packages:
+      - mobian-plasma-mobile
+      - angelfish
+      - elisa
+      - firefox-esr
+      - kdeconnect
+      - ktrip
+      - neochat
+      - phrog
+      - plasma-discover
+      - qmlkonsole
+      - tokodon
+      - webext-ublock-origin-firefox
+
+# HACK: workaround to fix https://salsa.debian.org/Mobian-team/mobian-recipes/-/issues/36
+# seems like plasma-mobile.service gets enabled even if dh_installsystemd should forbid that
+# and, this seems to happen only on amd64 images, not on other images for arm64...
+  - action: run
+    description: Disable plasma-mobile.service to avoid conflicts with phrog
+    chroot: true
+    command: systemctl mask plasma-mobile.service

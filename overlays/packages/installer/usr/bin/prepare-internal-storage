@@ -1,0 +1,122 @@
+#!/bin/sh -e
+# Copyright 2020 Oliver Smith, Undef
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Modified from https://gitlab.com/postmarketOS/postmarketos-ondev/-/blob/master/ondev-prepare-internal-storage.sh
+
+# Sanity check
+part_install="$(df -T / | awk '/^\/dev/ {print $1}')"
+installer_part="$(realpath /dev/disk/by-label/installer)"
+if [ "$installer_part" != "$part_install" ]; then
+    echo "ERROR: Unexpected installer partition; installer is not" \
+        "running from detected partition. Bailing!"
+    echo "This situation typically arises when the installer image" \
+        "exists on both embedded and removable storage."
+    echo "(installer_part: '$installer_part')"
+    echo "(part_install: '$part_install')"
+    exit 1
+fi
+
+echo " === prepare-internal-storage === "
+set -x
+
+dev=${INTERNAL_TARGET}
+dev_boot=""
+dev_root=""
+boot_filesystem="ext4"
+mb_boot_part_start="8"
+mb_boot="512"
+
+# Create partition table
+partitions_create() {
+    parted -s "${dev}" mktable gpt
+    # Boot Partition
+    parted -s "${dev}" mkpart primary "${boot_filesystem}" \
+        "${mb_boot_part_start}M" "${mb_boot}M"
+    # Root Partition
+    parted -s "${dev}" mkpart primary "${mb_boot}M" "100%"
+    parted -s "${dev}" set 1 boot on
+    if grep -q "purism,librem5" /proc/device-tree/compatible; then
+        # This ensures that /dev/disk/by-partlabel/u-boot points to the installer
+        partprobe "${dev}"
+        # Retrieve u-boot from the current dedicated partition
+        dd if=/dev/disk/by-partlabel/u-boot of=/tmp/u-boot-librem5.imx
+        # We use parted for adding a "protective" partition for u-boot:
+        # * mkpart u-boot 66s ${BOOTSTART}: create "u-boot" partition from sector 66
+        #                                   (33KiB) up to the start of the `/boot`
+        #                                   partition
+        # * toggle 3 hidden: set flag "hidden" on partition 3 (the one we just created)
+        parted -s "${dev}" mkpart u-boot 66s "${mb_boot_part_start}M"
+        parted -s "${dev}" toggle 3 hidden
+        # Write u-boot to the this protective partition by skipping the first 33KiB of the disk
+        partprobe "${dev}"
+        if [ -e "${dev}p3" ]; then
+            uboot_part="${dev}p3"
+        else
+            uboot_part="${dev}3"
+        fi
+        dd if=/tmp/u-boot-librem5.imx of="${uboot_part}"
+    fi
+    partprobe "${dev}"
+}
+
+# Try to find the boot and root partitions for 10 seconds
+partitions_find() {
+    for i in $(seq 1 100); do
+        if [ -e "${dev}p1" ] && [ -e "${dev}p2" ]; then
+            dev_boot="${dev}p1"
+            dev_root="${dev}p2"
+            return
+        elif [ -e "${dev}1" ] && [ -e "${dev}2" ]; then
+            dev_boot="${dev}1"
+            dev_root="${dev}2"
+            return
+        fi
+        sleep 0.1
+    done
+    echo "Failed to find boot and root partition after creating" \
+        "partition table (dev: '$dev')"
+    exit 1
+}
+
+# Configure the GPT Discoverable Partition GUIDs. See 
+# https://uapi-group.org/specifications/specs/discoverable_partitions_specification/
+# for more information.
+configure_dps_labels() {
+    case "$(uname -m)" in
+        x86_64)
+            part_type_root="4f68bce3-e8cd-4db1-96e7-fbcaf984b709"
+            ;;
+        aarch64)
+            part_type_root="b921b045-1df0-41c3-af44-4c6f280d3fae"
+            ;;
+        riscv64)
+            part_type_root="72ec70a6-cf74-40e6-bd49-4bda08e8f224"
+            ;;
+        armhf)
+            part_type_root="69dad710-2ce4-4e3c-b16c-21a1d49abed3"
+            ;;
+    esac
+    sfdisk --part-type "${dev}" 2 "${part_type_root}"
+}
+
+# Format the boot partition
+boot_format() {
+    mkfs.ext4 -F -q -L boot "${dev_boot}"
+}
+
+# Copy the boot partition contents from /boot 
+boot_copy() {
+    local target_path="/mnt/install-boot"
+    local source_path="/boot"
+
+    mkdir -p "${target_path}"
+    mount "${dev_boot}" "${target_path}"
+    cp -a -r "${source_path}"/* "${target_path}"
+    umount "${target_path}"
+}
+
+partitions_create
+partitions_find
+configure_dps_labels
+boot_format
+boot_copy

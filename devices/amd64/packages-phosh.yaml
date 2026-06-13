@@ -1,0 +1,14 @@
+{{- $architecture := or .architecture "amd64" -}}
+{{- $device := or .device "efi" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install device-specific packages for Phosh
+    packages:
+      - gnome-firmware

@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+
+import json
+import sys
+
+def check_children(blk, search) -> (bool, str):
+    pname = blk["name"]
+    if blk["mountpoints"]:
+        # Note: mountpoint we are usually looking for is /tmp/calamares-root-o1cvofyt
+        # where the last block is random
+        for mp in blk["mountpoints"]:
+            if mp and search in mp:
+                return True, pname
+    if "children" in blk.keys():
+        for child in blk["children"]:
+            found, uppername = check_children(child, search)
+            if found:
+                return True, pname
+    return False, ""
+
+
+if len(sys.argv) >= 2:
+    search = sys.argv[1]
+else:
+    search = "/tmp/calamares-root"
+blkdevs = json.load(sys.stdin)
+
+for blkdev in blkdevs["blockdevices"]:
+    found, pname = check_children(blkdev, search)
+    if found:
+        print(pname)
+        sys.exit(0)
+

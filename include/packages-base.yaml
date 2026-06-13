@@ -1,0 +1,94 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+{{- $ssh := or .ssh "" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: apt
+    recommends: false
+    description: Install base packages
+    packages:
+{{ if $ssh }}
+      - openssh-server
+{{ end }}
+      # Reason for this: it's @a-wai's preferred editor
+      - vim
+      # mobian-base
+      - alsa-ucm-conf
+      - alsa-utils
+      - apt-utils
+      - busybox
+      - callaudiod
+      - ca-certificates
+      - console-data
+      - console-setup
+      - device-tree-compiler
+      - dosfstools
+      - e2fsprogs
+      - plymouth
+      - plymouth-label
+      - file
+      - hwdata
+      - kbd
+      - locales
+      - locales-all
+      - systemd-timesyncd
+      - man-db
+      - mmc-utils
+      - patch
+      - pipewire-audio
+      - python3-dbus
+      - rtkit
+      - usb-modeswitch
+      - usbutils
+      - wireplumber
+      - libcanberra-pulse
+      - libnss-myhostname
+      - libnss-systemd
+      - libpam-cap
+      - bash-completion
+      - bzip2
+      - curl
+      - dialog
+      - gawk
+      - inxi
+      - less
+      - psmisc
+      - psutils
+      - sudo
+      - unzip
+      - xz-utils
+      - zstd
+      - bluetooth
+      - dnsmasq-base
+      - iputils-ping
+      - iptables
+      - iptables-persistent
+      - iw
+      - network-manager
+      - libspa-0.2-bluetooth
+      - net-tools
+      - rfkill
+      - systemd-resolved
+      - wireless-regdb
+      - wireless-tools
+      - wpasupplicant
+      # mobian-tweaks-common
+      - libglib2.0-bin
+      - libpam-runtime
+      # mobile-tweaks-common
+      - dconf-gsettings-backend
+      - adduser
+      
+      # Conditional Release Packages
+      {{ if eq $debian_suite "bookworm" }}
+
+      {{ else }}
+      # Sid and Forky
+      - systemd-repart
+      - xfconf-gsettings-backend
+      {{ end }}

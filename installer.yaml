@@ -1,0 +1,62 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $family := or .family "sunxi" }}
+{{- $nonfree := or .nonfree "false" -}}
+{{- $device := or .device "pinephone" }}
+{{- $partitiontable := or .partitiontable "gpt" }}
+{{- $filesystem := or .filesystem "ext4" }}
+{{- $environment := or .environment "phosh" -}}
+{{- $image := or .image "mobian-installer.img" -}}
+# FIX: Increased to 15GB to fit partitions
+{{- $installersize := or .installersize "10GB" }}
+{{- $installfs := or .installfs "installfs.tar.gz" }}
+{{- $bootstart := or .bootstart "1MiB" }}
+{{- $kernel := or .kernel "default" }}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: unpack
+    file: {{ $installfs }}
+
+  - action: overlay
+    source: rootfs-{{ $device }}-{{ $environment }}.sqfs
+    destination: /var/lib/rootfs.sqfs
+
+  - action: recipe
+    recipe: include/partition-{{ $partitiontable }}.yaml
+    variables:
+      # FIX: Pass architecture for GUID logic
+      architecture: {{ $architecture }}
+      bootstart: {{ $bootstart }}
+      filesystem: {{ $filesystem }}
+      image: {{ $image }}
+      imagesize: {{ $installersize }}
+      installer: "true"
+
+  - action: filesystem-deploy
+    description: Deploy filesystem onto image
+
+{{ if eq $nonfree "true" }}
+  - action: run
+    description: Enable non-free-firmware repos
+    chroot: true
+    script: scripts/setup-apt-nonfree.sh true
+{{ end }}
+
+  - action: recipe
+    recipe: devices/{{ $family }}/packages-base-installer.yaml
+    variables:
+      device: {{ $device }}
+      kernel: {{ $kernel }}
+      nonfree: {{ $nonfree }}
+
+  - action: recipe
+    recipe: devices/{{ $family }}/bootloader.yaml
+    variables:
+      device: {{ $device }}
+      image: {{ $image }}
+      architecture: {{ $architecture }}
+

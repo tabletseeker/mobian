@@ -1,0 +1,160 @@
+{{- $architecture := or .architecture "arm64" -}}
+{{- $username := or .username "mobian" -}}
+{{- $password := or .password "1234" -}}
+{{- $hostname := or .hostname "mobian" -}}
+{{- $environment := or .environment "phosh" -}}
+{{- $contrib := or .contrib "false" -}}
+{{- $nonfree := or .nonfree "false" -}}
+{{- $ssh := or .ssh "" -}}
+{{- $zram:= or .zram "false" -}}
+{{- $debian_suite := or .debian_suite "forky" -}}
+{{- $suite := or .suite $debian_suite -}}
+{{- $rootfs := or .rootfs "rootfs.tar.gz" }}
+{{- $kernel := or .kernel "default" }}
+{{- $phone_packages := or .phone_packages "false" }}
+{{- $sunxi_packages := or .sunxi_packages "false" }}
+{{- $amd64_packages := or .amd64_packages "false" }}
+{{- $deb_packages := or .deb_packages "false" }}
+{{- $keyboard := or .keyboard "false" }}
+{{- $intel_chipset := or .intel_chipset "false" }}
+{{- $mirror := or .mirror "https://deb.debian.org/debian" -}}
+
+architecture: {{ $architecture }}
+
+## Copyright (C) 2026 tabletseeker <https://github.com/tabletseeker>
+## See the LICENSE for file COPYING conditions.
+
+actions:
+  - action: debootstrap
+    suite: {{ $debian_suite }}
+    components:
+      - main
+{{ if eq $contrib "true" }}
+      - contrib
+{{ end }}
+{{ if eq $nonfree "true" }}
+      - non-free-firmware
+{{ end }}
+    mirror: {{ $mirror }}
+    variant: minbase
+
+  - action: apt
+    description: Install setup packages
+    recommends: false
+    packages:
+      - ca-certificates
+      - apt-transport-https
+
+  - action: overlay
+    description: Enable resize of root partition
+    source: overlays/repart.d/
+    destination: /etc/repart.d/
+
+  - action: run
+    description: Setup debian repository
+    chroot: true
+    script: scripts/setup-apt.sh {{ $debian_suite }} {{ $suite }}
+
+{{ if eq $nonfree "true" }}
+  - action: run
+    description: Enable non-free-firmware repos
+    chroot: true
+    script: scripts/setup-apt-nonfree.sh true
+{{ end }}
+
+{{ if eq $kernel "custom" }}
+  - action: apt
+    description: Install dependencies
+    recommends: false
+    packages:
+      - zstd
+      - initramfs-tools
+
+  - action: overlay
+    description: Move kernel files
+    source: kernel/
+    destination: /kernel/
+
+  - action: run
+    description: Install custom kernel
+    chroot: true
+    script: scripts/install_kernel.sh
+{{ end }}
+
+  - action: recipe
+    recipe: include/packages-base.yaml
+    variables:
+      ssh: {{ $ssh }}
+      debian_suite: {{ $debian_suite }}
+
+  - action: recipe
+    recipe: include/packages-{{ $environment }}.yaml
+    variables:
+      debian_suite: {{ $debian_suite }}
+
+{{ if eq $phone_packages "true" }}
+  - action: overlay
+    description: Move phone-package files
+    source: overlays/packages/phone/main
+{{ end }}
+
+{{ if eq $sunxi_packages "true" }}
+  - action: overlay
+    description: Move sunxi-package files
+    source: overlays/packages/phone/sunxi
+{{ end }}
+
+{{ if eq $amd64_packages "true" }}
+  - action: overlay
+    description: Move amd64-package files
+    source: overlays/packages/amd64
+{{ end }}
+
+{{ if eq $deb_packages "true" }}
+  - action: overlay
+    description: Move deb files
+    source: overlays/packages/deb
+    destination: /deb/
+
+  - action: run
+    description: Install deb packages
+    chroot: true
+    script: scripts/install_deb.sh
+{{ end }}
+
+  - action: run
+    description: Set up default user
+    chroot: true
+    script: scripts/setup-user.sh {{ $username }} {{ $password }}
+
+{{ if $ssh }}
+  - action: overlay
+    description: Set up sshd configuration
+    source: overlays/sshd_config.d/
+    destination: /etc/ssh/sshd_config.d/
+
+  - action: overlay
+    description: Set up user's ssh configuration
+    source: overlays/ssh/
+    destination: /home/{{ $username }}/.ssh/
+
+  - action: run
+    description: Set owner of .ssh
+    chroot: true
+    command: chown -R {{ $username }}:{{ $username }} /home/{{ $username }}/.ssh/
+{{ end }}
+
+{{ if eq $zram "true" }}
+  - action: overlay
+    description: setup zram devices
+    source: overlays/zram/
+    destination: /etc/
+{{ end }}
+
+  - action: run
+    description: Set up system
+    chroot: true
+    script: scripts/setup-system.sh {{ $hostname }} {{ $debian_suite }} {{ $keyboard }} {{ $intel_chipset }}
+
+  - action: pack
+    file: {{ $rootfs }}
