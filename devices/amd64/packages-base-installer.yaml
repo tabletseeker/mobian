@@ -19,6 +19,7 @@ actions:
       - os-prober
       - initramfs-tools
       - grub-efi
+      - cpio
 
       {{ if eq $kernel "default" }}
       - linux-image-amd64
