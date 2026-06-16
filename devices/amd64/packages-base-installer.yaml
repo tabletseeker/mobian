@@ -28,7 +28,8 @@ actions:
       - intel-microcode
       - amd64-microcode
       - firmware-misc-nonfree
-      # --- Wireless (Surface Connectivity) ---
       - firmware-libertas
       - firmware-iwlwifi
+      - firmware-realtek
+      - firmware-atheros
       {{ end }}
