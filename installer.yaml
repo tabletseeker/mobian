@@ -60,3 +60,17 @@ actions:
       image: {{ $image }}
       architecture: {{ $architecture }}
 
+  - action: run
+    description: Absolute final installer disk cleanup
+    chroot: true
+    command: |
+      echo "Purging final live image APT lists..."
+      rm -rf /var/lib/apt/lists/*
+      rm -rf /var/cache/apt/archives/*
+      
+      echo "Flattening storage sectors..."
+      sync
+      dd if=/dev/zero of=/zeros bs=1M conv=fsync || true
+      sync
+      rm -f /zeros
+      sync
