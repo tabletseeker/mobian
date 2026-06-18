@@ -162,6 +162,7 @@ jobs:
             *.img.bmap
             *.sha256sums
 
+
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true'
         env:
@@ -191,17 +192,17 @@ jobs:
             TAG_NAME="${TAG_NAME}-live"
           fi
           
-          # 4a. Add notes
+          # 4a. Add notes (Asterisk pulled inside the quotes)
           if [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
-            NOTES="$NOTES"$'\n'* "**Default On-Screen Keyboard:** Enabled"
+            NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Enabled"
           else
-            NOTES="$NOTES"$'\n'* "**Default On-Screen Keyboard:** Disabled"
+            NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Disabled"
           fi
 
           if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then
-            NOTES="$NOTES"$'\n'* "**Intel Chipset Support:** Enabled"
+            NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Enabled"
           else
-            NOTES="$NOTES"$'\n'* "**Intel Chipset Support:** Disabled"
+            NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Disabled"
           fi
 
           # 6. Create and upload to the release
@@ -211,4 +212,3 @@ jobs:
             --generate-notes || echo "Release already exists"
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
-
