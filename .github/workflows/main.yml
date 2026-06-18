@@ -186,17 +186,17 @@ jobs:
             NOTES="* **Custom Kernel:** False"
           fi
           
-          # 3. Append Keyboard and Intel status options to NOTES
+          # 3. Append Keyboard and Intel status options to NOTES (Asterisk pulled inside the quotes)
           if [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
-            NOTES="$NOTES"$'\n'* "**Default On-Screen Keyboard:** Enabled"
+            NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Enabled"
           else
-            NOTES="$NOTES"$'\n'* "**Default On-Screen Keyboard:** Disabled"
+            NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Disabled"
           fi
 
           if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then
-            NOTES="$NOTES"$'\n'* "**Intel Chipset Support:** Enabled"
+            NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Enabled"
           else
-            NOTES="$NOTES"$'\n'* "**Intel Chipset Support:** Disabled"
+            NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Disabled"
           fi
 
           # 4. Create and upload to the release
