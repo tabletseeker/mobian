@@ -31,4 +31,6 @@ actions:
       # --- Wireless (Surface Connectivity) ---
       - firmware-libertas
       - firmware-iwlwifi
+      - firmware-realtek
+      - firmware-atheros  
       {{ end }}
