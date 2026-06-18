@@ -28,14 +28,28 @@ actions:
       - intel-microcode
       - amd64-microcode
       - firmware-amd-graphics
+      - firmware-misc-nonfree
+      - atmel-firmware
       - bluez-firmware
+      - dahdi-firmware-nonfree
+      - firmware-ast
       - firmware-atheros
+      - firmware-bnx2
+      - firmware-bnx2x
       - firmware-brcm80211
+      - firmware-cavium
       - firmware-intel-sound
       - firmware-iwlwifi
       - firmware-libertas
+      - firmware-linux-nonfree
+      - firmware-myricom
+      - firmware-netronome
+      - firmware-netxen
+      - firmware-qlogic
       - firmware-realtek
+      - firmware-siano
       - firmware-sof-signed
+      - firmware-zd1211
       {{ end }}
 
       # Conditional Release Packages
@@ -43,5 +57,7 @@ actions:
 
       {{ else }}
       # Sid and Forky
-      - firmware-intel-graphics   
+      - firmware-intel-graphics
+      - firmware-cirrus
+      - firmware-marvell-prestera
       {{ end }}
