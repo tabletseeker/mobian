@@ -260,43 +260,7 @@ if [ -x /usr/sbin/update-initramfs ]; then
     update-initramfs -u -k all || true
 fi
 
-
 # 9. Clean Up
-echo "Starting aggressive space-saving cleanup..."
-
-# A. Kernel Modules (Safe: Strips debug symbols but keeps the driver functional)
-find /usr/lib/modules/ -name "*.ko" -exec strip --strip-unneeded {} + 2>/dev/null || true
-
-# B. Locales, Docs, & Help (KEEP en* and 'C' for Calamares UI)
-find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name 'en*' ! -name 'C*' -exec rm -rf {} +
-rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/info/* /usr/share/gnome/help/*
-rm -rf /usr/share/help/* /usr/share/omf/* /usr/share/gtk-doc/*
-
-# C. Icon & Theme (KEEP SVGs for Calamares/Phosh, kill PNG bloat)
-# Calamares uses Adwaita SVGs for its navigation icons.
-find /usr/share/backgrounds/ -mindepth 1 ! -path "/usr/share/backgrounds/custom*" -delete
-
-# E. Charset & Dev Pruning
-# Calamares needs gconv for string conversions (Usernames/Passwords)
-find /usr/lib/*/gconv -type f \
-    ! -name 'gconv-modules*' ! -name 'ANSI_X3.4-1968.so' \
-    ! -name 'UTF-16.so' ! -name 'UTF-32.so' ! -name 'ISO8859-1.so' -delete
-# Only remove .a files that aren't part of the python/qt6 stack
-find /usr/lib -name "*.a" ! -path "*python*" ! -path "*qt6*" -delete
-
-# F. Python & Caches
-# We ONLY remove __pycache__; we do NOT touch .py files as Calamares is Python-based
-find /usr/lib/python3* -name "__pycache__" -exec rm -rf {} +
-rm -rf /var/cache/fontconfig/* /var/cache/debconf/* /var/cache/gstreamer-1.0/*
-rm -rf /usr/src/* 
-# Keep /usr/include/python* just in case Calamares needs to check headers for a module
-
-# G. Log & Journal Vacuuming
-find /var/log -type f -name "*.gz" -o -name "*.old" -o -name "*.1" -delete
-find /var/log -type f -exec truncate -s 0 {} +
-[ -x /usr/bin/journalctl ] && journalctl --vacuum-time=1s
-
-# 9. Apt Clean up
 apt-get autoremove --purge -y
 apt-get clean
 rm -rf /var/lib/apt/lists/*
@@ -307,4 +271,5 @@ dd if=/dev/zero of=/zeros bs=1M conv=fsync || true
 sync
 rm -f /zeros
 sync
+
 
