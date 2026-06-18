@@ -170,9 +170,9 @@ jobs:
           # 1. Determine tag name based on context
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             if [ -n "${{ github.event.inputs.custom_kernel_url }}" ]; then
-              TAG_NAME="${{ env.IMAGE_NAME }}-custom-full"
+              TAG_NAME="${{ env.IMAGE_NAME }}-custom-minimal"
             else
-              TAG_NAME="${{ env.IMAGE_NAME }}-full"
+              TAG_NAME="${{ env.IMAGE_NAME }}-minimal"
             fi
           else
             TAG_NAME="${{ github.ref_name }}"
