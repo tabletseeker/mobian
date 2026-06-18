@@ -177,6 +177,9 @@ jobs:
           # 2. Append "-custom" if a custom kernel URL is present
           if [ -n "${{ github.event.inputs.custom_kernel_url }}" ]; then
             TAG_NAME="${TAG_NAME}-custom"
+            NOTES="* **Custom Kernel:** True"
+          else
+            NOTES="* **Custom Kernel:** False"
           fi
 
           # 3. Handle the build type fallback logic
@@ -187,10 +190,25 @@ jobs:
           if [ "$BUILD_TYPE" = "installer" ]; then
             TAG_NAME="${TAG_NAME}-live"
           fi
+          
+          # 4a. Add notes
+          if [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
+            NOTES="$NOTES"$'\n'* "**Default On-Screen Keyboard:** Enabled"
+          else
+            NOTES="$NOTES"$'\n'* "**Default On-Screen Keyboard:** Disabled"
+          fi
 
-          # 5. Create and upload to the release
+          if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then
+            NOTES="$NOTES"$'\n'* "**Intel Chipset Support:** Enabled"
+          else
+            NOTES="$NOTES"$'\n'* "**Intel Chipset Support:** Disabled"
+          fi
+
+          # 6. Create and upload to the release
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
+            --notes "$NOTES" \
             --generate-notes || echo "Release already exists"
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
+
