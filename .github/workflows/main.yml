@@ -167,13 +167,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG_NAME="${{ github.ref_name }}"
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            TAG_NAME="${{ env.IMAGE_NAME }}"
+          # 1. Select the base tag name
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_NAME="$IMAGE_NAME"
+          else
+            TAG_NAME="${{ github.ref_name }}"
           fi
 
+          # 2. Append "-custom" if a custom kernel URL is present
+          if [ -n "${{ github.event.inputs.custom_kernel_url }}" ]; then
+            TAG_NAME="${TAG_NAME}-custom"
+          fi
+
+          # 3. Handle the build type fallback logic
+          BUILD_TYPE="${{ github.event.inputs.build_type }}"
+          : "${BUILD_TYPE:=${{ env.DEFAULT_BUILD_TYPE }}}"
+
+          # 4. Append "-live" if the build type is an installer
+          if [ "$BUILD_TYPE" = "installer" ]; then
+            TAG_NAME="${TAG_NAME}-live"
+          fi
+
+          # 5. Create and upload to the release
           gh release create "$TAG_NAME" \
-            --title "${{ env.IMAGE_NAME }}" \
+            --title "$TAG_NAME" \
             --generate-notes || echo "Release already exists"
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
