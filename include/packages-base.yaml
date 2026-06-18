@@ -35,7 +35,7 @@ actions:
       - hwdata
       - kbd
       - locales
-      - locales-all
+#     - locales-all
       - systemd-timesyncd
       - man-db
       - mmc-utils
