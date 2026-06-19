@@ -67,26 +67,26 @@ A 100% Debian Linux, free, privacy focused, open-source operating system for tou
 
 By using option `-o` during building, you can produce a Mobian installer image that contains a basic Phosh environemnt and calamares to install the filesystem.
 
-There are two CI branches, from which installer images featured on the Github Releases page are built. To keep those images under the Github prescribed limit of 2GB, steps to conserve space have been employed. When building locally, use the master branch.
+This repo features two branches, which produce different installer images. On the Github Release page the postfix `-live` and `-minimal` indicates either the master or lightweight branch.
 
-1. `[ci-installer]`
-   * Preferred medium for Mobian installer images
-   * Installer-Only, no desktop environment
-   * Includes essential firmware, full locales/language support, full base & phosh package lists
-   
-   Note: Build option `-K` enables automatic on-screen-keyboard for devices w/o a physical keyboard.
-   
-   <img src=https://i.postimg.cc/W3qqKK08/Screenshot-2026-06-06-00-48-19.png width=65% height=75%>
-
-3. `[ci-live]`
-   * Full Phosh Live Environment, allowing users to test their device before starting the installation.
-   * Custom kernels are also installed on the live system, so touch sensitivity and other hardware can be checked.
+1. `[master]`
+   * Full Phosh Live Environment, allowing users to test their device before starting the installation
+   * Custom kernels are also installed on the live system, so touch sensitivity and other hardware can be checked
    * Essential firmware + Wifi to grant internet access in case additional packages are needed for testing
    * Trimmed Locales/English, trimmed miscelaneous packages, minor adjustments to save space
-  
+   
    Note: Live installer images come with a Calamares shortcut that starts the installation.
    
    <img src=https://github.com/tabletseeker/mob_test/blob/main/img/install1.png width=65% height=75%>
+
+2. `[mobian-light]`
+   * Designed to be lightweight
+   * Installer-Only, no desktop environment
+   * Includes essential firmware, limited locales/language support, minimal base & phosh package lists
+   
+   Note: Build option `-K` globally enables automatic on-screen-keyboard for devices w/o a physical keyboard.
+   
+   <img src=https://i.postimg.cc/W3qqKK08/Screenshot-2026-06-06-00-48-19.png width=65% height=75%>
  
 1. Download or build your installer image. Extract it, if compression was chosen.
       ```sh
