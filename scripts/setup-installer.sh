@@ -267,9 +267,11 @@ rm -rf /var/lib/apt/lists/*
 
 sync
 echo "Zeroing free space for maximum compression..."
-dd if=/dev/zero of=/zeros bs=1M conv=fsync || true
+# Using a 4k block size prevents dd from out-running the virtual disk filesystem buffer
+dd if=/dev/zero of=/zeros bs=4k conv=fsync || true
 sync
 rm -f /zeros
 sync
+
 
 
