@@ -5,6 +5,13 @@
 
 set -e
 
+echo "Stripping server firmware out of the CORE rootfs payload..."
+rm -rf /lib/firmware/netronome /usr/lib/firmware/netronome
+rm -rf /lib/firmware/mrvl /usr/lib/firmware/mrvl
+rm -rf /lib/firmware/liquidio /usr/lib/firmware/liquidio
+rm -rf /lib/firmware/qlogic /usr/lib/firmware/qlogic
+rm -rf /lib/firmware/cxgb4 /usr/lib/firmware/cxgb4
+
 # 1. Standard Package Cleanup
 apt-get -y autoremove --purge
 apt-get clean
@@ -18,8 +25,10 @@ systemctl mask wpa_supplicant-wired@.service
 systemctl mask wpa_supplicant-nl80211@.service
 
 # 4. ZERO FREE SPACE (Maximize XZ speed)
-echo "Zeroing free space..."
-dd if=/dev/zero of=/zero.fill bs=1M conv=fsync || true
 sync
-rm -f /zero.fill
-
+echo "Zeroing free space for maximum compression..."
+# Using a 4k block size prevents dd from out-running the virtual disk filesystem buffer
+dd if=/dev/zero of=/zeros bs=4k conv=fsync || true
+sync
+rm -f /zeros
+sync
