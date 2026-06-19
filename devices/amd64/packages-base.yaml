@@ -35,17 +35,17 @@ actions:
       - firmware-ast
       - firmware-atheros
       - firmware-bnx2
-      - firmware-bnx2x
+#     - firmware-bnx2x
       - firmware-brcm80211
-      - firmware-cavium
+#     - firmware-cavium
       - firmware-intel-sound
       - firmware-iwlwifi
       - firmware-libertas
       - firmware-linux-nonfree
-      - firmware-myricom
-      - firmware-netronome
-      - firmware-netxen
-      - firmware-qlogic
+#     - firmware-myricom
+#     - firmware-netronome
+#     - firmware-netxen
+#     - firmware-qlogic
       - firmware-realtek
       - firmware-siano
       - firmware-sof-signed
