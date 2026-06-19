@@ -193,6 +193,8 @@ jobs:
           fi
           
           # 4a. Add notes (Asterisk pulled inside the quotes)
+          NOTES="$NOTES"$'\n'"* **Debian Suite:** ${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
+          
           if [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
             NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Enabled"
           else
