@@ -35,6 +35,21 @@ on:
           - trixie
           - bookworm
         default: forky
+      kernel_project:
+        description: 'Choose Target Upstream Kernel Repository'
+        required: true
+        type: choice
+        options:
+          - default
+          - linux-surface/linux-surface
+          - t2linux/linux-t2
+          - zen-kernel/zen-kernel
+        default: default
+      kernel_tag:
+        description: 'Target Git Release Tag (e.g. debian-6.19.8-3)'
+        required: false
+        type: string
+        default: ''
       use_keyboard:
         description: 'Default On-Screen-Keyboard?'
         required: false
@@ -45,11 +60,6 @@ on:
         required: false
         type: boolean
         default: false
-      custom_kernel_url:
-        description: 'Custom Kernel URL'
-        required: false
-        type: string
-        default: ''
       create_release:
         description: 'Create a formal GitHub Release?'
         required: false
@@ -85,40 +95,25 @@ jobs:
           sudo apt-get install -y debos bmap-tools squashfs-tools-ng xz-utils tar qemu-user-static wget
 
       - name: Process Custom Kernel
-        if: github.event.inputs.custom_kernel_url != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          URL="${{ github.event.inputs.custom_kernel_url }}"
+          mkdir -p kernel/
+          PROJECT="${{ github.event.inputs.kernel_project }}"
+          TARGET_TAG="${{ github.event.inputs.kernel_tag }}"
           
-          # Check if the URL is a standard GitHub Release Page
-          if [[ "$URL" == *"github.com"* && "$URL" == *"/releases/tag/"* ]]; then
-            echo "Detected GitHub Release page. Processing via GitHub CLI..."
-            
-            # FIX: Included the trailing slash in the match pattern to clean up the path format
-            REPO_PATH=$(echo "$URL" | sed -E 's|https://github.com/||; s|/releases/tag/.*||')
-            
-            # 2. Extract tag name (e.g. debian-6.19.8-3)
-            KERNEL_TAG="${URL%*/}"
-            KERNEL_TAG="${KERNEL_TAG##*/}"
-            
-            # 3. Download via GitHub API
-            gh release download "$KERNEL_TAG" --repo "$REPO_PATH" --pattern "linux-headers-*.deb" --dir kernel/ --clobber
-            gh release download "$KERNEL_TAG" --repo "$REPO_PATH" --pattern "linux-image-*.deb" --dir kernel/ --clobber
-          
+          : "${PROJECT:=default}"
+
+          if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
+            echo "Targeting Project: $PROJECT with explicit Tag: $TARGET_TAG"
+            gh release download "$TARGET_TAG" --repo "$PROJECT" \
+              --pattern "linux-image-*.deb" --pattern "linux-headers-*.deb" \
+              --dir kernel/ --clobber
           else
-            echo "Detected generic web URL. Processing via wget..."
-            
-            # Download files directly matching the pattern from an index directory
-            wget -r -l1 -nd -A "linux-headers-*.deb,linux-image-*.deb" -P kernel/ "$URL" --no-check-certificate || true
-            
-            # If the URL is a direct link to a single .deb file instead of a listing, download it directly
-            if [[ "$URL" == *".deb" ]]; then
-              wget -P kernel/ "$URL" --no-check-certificate
-            fi
+            echo "Selected stock default kernel or missing tag. Keeping kernel/ empty."
           fi
 
-          echo "Final contents of the kernel directory:"
+          echo "Verified kernel/ folder deployment contents:"
           ls -la kernel/
 
       - name: Run Build Script
@@ -141,7 +136,12 @@ jobs:
           [ "$BUILD_TYPE" = "installer" ] && ARGS+=("-o")
           [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ] && ARGS+=("-K")
           [ "${{ github.event.inputs.use_intel }}" = "true" ] && ARGS+=("-L")
-          [ -n "${{ github.event.inputs.custom_kernel_url }}" ] && ARGS+=("-k")
+          
+          # Automated path detector: If files exist in kernel/, append -k cleanly to build.sh
+          if [ -n "$(ls -A kernel/ 2>/dev/null)" ]; then
+            echo "Kernel directory populated. Enabling custom kernel build option (-k)..."
+            ARGS+=("-k")
+          fi
           
           sudo ./build.sh "${ARGS[@]}"
           
@@ -167,47 +167,62 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Determine tag name based on context
+          PROJECT="${{ github.event.inputs.kernel_project }}"
+          TARGET_TAG="${{ github.event.inputs.kernel_tag }}"
+          
+          : "${PROJECT:=default}"
+          
+          # 1. Parse repository project name cleanly to a short-name string (e.g. linux-surface -> surface)
+          if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
+            SHORT_NAME=$(echo "$PROJECT" | sed 's|.*/||; s|linux-||g; s|-kernel||g')
+          else
+            SHORT_NAME=""
+          fi
+
+          # 2. Determine unique minimal tag names based on context
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            if [ -n "${{ github.event.inputs.custom_kernel_url }}" ]; then
-              TAG_NAME="${{ env.IMAGE_NAME }}-custom-minimal"
+            if [ -n "$SHORT_NAME" ]; then
+              TAG_NAME="${{ env.IMAGE_NAME }}-${SHORT_NAME}-minimal"
             else
               TAG_NAME="${{ env.IMAGE_NAME }}-minimal"
             fi
           else
             TAG_NAME="${{ github.ref_name }}"
-            [ -n "${{ github.event.inputs.custom_kernel_url }}" ] && TAG_NAME="${TAG_NAME}-custom"
+            [ -n "$SHORT_NAME" ] && TAG_NAME="${TAG_NAME}-${SHORT_NAME}"
           fi
 
-          # 2. Initialize NOTES cleanly based on custom kernel status
-          if [ -n "${{ github.event.inputs.custom_kernel_url }}" ]; then
-            NOTES="* **Custom Kernel:** True"
+          # 3. Initialize and format the primary metadata notes block (Updated Text Labels)
+          if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
+            NOTES="* **Kernel Project:** $PROJECT"
+            NOTES="$NOTES"$'\n'"* **Kernel Tag:** $TARGET_TAG"
           else
             NOTES="* **Custom Kernel:** False"
           fi
           
-          # 3. Append Keyboard and Intel status options to NOTES (Asterisk pulled inside the quotes)
+          # 4. Append operational options to NOTES (Asterisk pulled inside the quotes)
           NOTES="$NOTES"$'\n'"* **Debian Suite:** ${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
           
-          if [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_inputs.use_keyboard }}" = "true" ]; then
             NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Enabled"
           else
             NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Disabled"
           fi
 
-          if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then
+          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_inputs.use_intel }}" = "true" ]; then
             NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Enabled"
           else
             NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Disabled"
           fi
 
-          # 4. Create and upload to the release
+          # 5. INJECT EXPLICIT KERNEL SOURCE LINK ABOVE FULL CHANGELOG
+          if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
+            NOTES="$NOTES"$'\n\n'"**Kernel Source:** https://github.com/${PROJECT}/releases/tag/${TARGET_TAG}"
+          fi
+
+          # 6. Create and upload to the release
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
             --notes "$NOTES" \
             --generate-notes || echo "Release already exists"
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
-
-
-
