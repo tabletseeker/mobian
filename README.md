@@ -20,24 +20,24 @@ A 100% Debian Linux, free, privacy focused, open-source operating system for tou
 - [ ] [Custom Apps](https://github.com/tabletseeker/mobian/blob/master/README.md#webapp-manager)
 - [ ] [System Settings](https://github.com/tabletseeker/mobian/blob/master/README.md#configuration)
 - [ ] [Credits](https://github.com/tabletseeker/mobian/blob/master/README.md#credits)
-- [ ] [Donations](https://github.com/tabletseeker/mobian/blob/master/README.md#donations)
+- [ ] [Donations](https://github.com/tabletseeker/mobian/blob/master/README.md#donations-)
 
 ## Sneak Peek
 - [x] Preview
 ### General UI
 * Mobian uses a phosh environment by default which if so desired can be replaced with a simple change in the base package list. For example, other comparable mobile environments are Lomiri and Plasma Mobile.
 
-  <img src="https://github.com/tabletseeker/mob_test/blob/main/kden_project_final.gif" width="75%" height="75%">
+  <img src="https://github.com/tabletseeker/mob_test/blob/main/kden_project_final.gif" width="70%" height="70%">
 
 ### Spotify
 * The spotify-client .deb package can be installed directly or during building by placing it in `mobian/overlays/packages/deb`.
 
-  <img src="https://github.com/tabletseeker/mob_test/blob/main/kden_project7.gif" width="75%" height="75%">
+  <img src="https://github.com/tabletseeker/mob_test/blob/main/kden_project7.gif" width="70%" height="70%">
 
 ### Netflix
 * At the time of writing Debian does not yet offer a Netflix package. Webapp-manager appears to be the most conveniant solution. Both previews are displaying the webapp versions of Netflix and Spotify. See [🔼 Webapp Manager](#Webapp-Manager)
 
-  <img src="https://github.com/tabletseeker/mob_test/blob/main/kden_project8.gif" width="75%" height="75%">
+  <img src="https://github.com/tabletseeker/mob_test/blob/main/kden_project8.gif" width="70%" height="70%">
 
 [🔼 Back to Top](#Roadmap)
 
@@ -54,8 +54,7 @@ A 100% Debian Linux, free, privacy focused, open-source operating system for tou
 * Fully customizable images
 * Versatile build script
 * Control over all installed packages
-* Support for custom kernels
-* Support for a wide range of x86-x64 devices
+* Support for custom kernels & wide range of x86-x64 devices
 
 [🔼 Back to Top](#Roadmap)
 
