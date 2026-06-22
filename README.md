@@ -46,15 +46,17 @@ A 100% Debian Linux, free, privacy focused, open-source operating system targeti
 
 * 100% Debian FOSS
 * 100% Official Debian Sources
-* No third party repositories, packages or code
-* Working calamares installer
-* UI & Bug fixes
-* No Google or third party services
-* No data collection of any kind
-* Fully customizable images
-* Versatile build script
-* Control over all installed packages
-* Support for custom kernels & wide range of x86-x64 devices
+* No 3rd party Mobian repositories or packages
+* Adding support for custom kernels & many x86-x64 touch devices (Surface Pro, Zenbook, Yoga etc.)
+* Major amd64 UI & Bug fixes
+* Adding Phosh defaults like OSK, Intel Chipset Support etc.
+* Fixed amd64 installer & added Live/Minimal calamares version
+* Enabling inclusion of .deb and ordinary files into image filesystem
+* Github CI
+* Support for all Debian releases - bookworm,trixie,forky,sid
+* Updated build script & recipes
+* Customizable package lists & default settings
+* Code refactoring
 
 [🔼 Back to Top](#Roadmap)
 
@@ -112,7 +114,7 @@ Multiple installer images can be found on the Github Release page. The postfix `
 
 Images featuring a custom kernel for specific devices carry an additional identifier. In the following example, the linux-surface kernel for Surface Pro devices has been included. 
 
-<img src=https://i.postimg.cc/nrG4h51S/surface-minimal.png width=60% height=75%>
+<img src=https://i.postimg.cc/DyfwSZdf/minimal.png width=60% height=75%>
 
 #### Test with Qemu
 You can also run images locally using qemu and even install it to a .qcow2 disk.
