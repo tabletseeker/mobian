@@ -67,19 +67,18 @@ A 100% Debian Linux, free, privacy focused, open-source operating system for tou
 
 By using option `-o` during building, you can produce a Mobian installer image that contains a basic Phosh environemnt and calamares to install the filesystem.
 
-This repo features two branches, which produce different installer images. On the Github Release page the postfix `-live` and `-minimal` indicates either the master or lightweight branch.
+This repo features two branches, which produce different installer images.
 
-1. `[master]`
+1. [master] 
    * Full Phosh Live Environment, allowing users to test their device before starting the installation
    * Custom kernels are also installed on the live system, so touch sensitivity and other hardware can be checked
-   * Essential firmware + Wifi to grant internet access in case additional packages are needed for testing
-   * Trimmed Locales/English, trimmed miscelaneous packages, minor adjustments to save space
+   * Essential firmware and wifi drivers enabling internet access in case additional packages are needed for testing
    
    Note: Live installer images come with a Calamares shortcut that starts the installation.
    
    <img src=https://github.com/tabletseeker/mob_test/blob/main/img/install1.png width=65% height=75%>
 
-2. `[mobian-light]`
+2. [mobian-light]
    * Designed to be lightweight
    * Installer-Only, no desktop environment
    * Includes essential firmware, limited locales/language support, minimal base & phosh package lists
@@ -104,8 +103,19 @@ This repo features two branches, which produce different installer images. On th
     <img src=https://github.com/tabletseeker/mob_test/blob/main/img/install4.png width=45% height=75%>
     <img src=https://github.com/tabletseeker/mob_test/blob/main/img/install5.png width=45% height=75%>
 
+#### Github Releases
+
+Multiple installer images can be found on the Github Release page. The postfix `-live` represents master and `-minimal` lightweight branch builds.
+
+<img src=https://i.postimg.cc/gJbhCt2K/Screenshot-2026-06-21-at-21-52-59-Releases-tabletseeker-mobian.png width=45% height=75%>
+<img src=https://i.postimg.cc/XJK54KrC/Screenshot-2026-06-21-at-21-53-14-Releases-tabletseeker-mobian.png width=45% height=75%>
+
+Images featuring a custom kernel for specific devices carry an additional identifier. In the following example, the linux-surface kernel for Surface Pro devices has been included. 
+
+<img src=https://i.postimg.cc/XJK54Kr5/Screenshot-2026-06-21-at-21-53-29-Releases-tabletseeker-mobian.png width=45% height=75%>
+
 #### Test with Qemu
-You can also run the image locally using qemu and even install it to a .qcow2 disk.
+You can also run images locally using qemu and even install it to a .qcow2 disk.
 1. Create .qcow2 file if you intend to install the image locally.
     ```
     qemu-img create -f qcow2 target_disk.qcow2 20G
