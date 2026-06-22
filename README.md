@@ -459,7 +459,7 @@ The original project can be found here: \
 https://salsa.debian.org/Mobian-team/mobian-recipes
 
 ## Donations 💗
- Bitcoin Address: bc1qxaf820c6zynvlqv62xkyucd654e8j2xqxc4nmw?message=Mobian
+ Bitcoin Address: bc1qxaf820c6zynvlqv62xkyucd654e8j2xqxc4nmw
  
  <img src=https://i.postimg.cc/BbxdX478/Screenshot-2026-06-22-11-58-33.png width=10% height=10%>
 
