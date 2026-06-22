@@ -69,7 +69,7 @@ By using option `-o` during building, you can produce a Mobian installer image t
 
 This repo features two branches, which produce different installer images.
 
-1. [master] 
+1. master
    * Full Phosh Live Environment, allowing users to test their device before starting the installation
    * Custom kernels are also installed on the live system, so touch sensitivity and other hardware can be checked
    * Essential firmware and wifi drivers enabling internet access in case additional packages are needed for testing
@@ -78,7 +78,7 @@ This repo features two branches, which produce different installer images.
    
    <img src=https://github.com/tabletseeker/mob_test/blob/main/img/install1.png width=65% height=75%>
 
-2. [mobian-light]
+2. mobian-light
    * Designed to be lightweight
    * Installer-Only, no desktop environment
    * Includes essential firmware, limited locales/language support, minimal base & phosh package lists
