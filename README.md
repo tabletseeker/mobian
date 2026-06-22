@@ -20,6 +20,7 @@ A 100% Debian Linux, free, privacy focused, open-source operating system for tou
 - [ ] [Custom Apps](https://github.com/tabletseeker/mobian/blob/master/README.md#webapp-manager)
 - [ ] [System Settings](https://github.com/tabletseeker/mobian/blob/master/README.md#configuration)
 - [ ] [Credits](https://github.com/tabletseeker/mobian/blob/master/README.md#credits)
+- [ ] [Donations](https://github.com/tabletseeker/mobian/blob/master/README.md#donations)
 
 ## Sneak Peek
 - [x] Preview
@@ -107,12 +108,12 @@ This repo features two branches, which produce different installer images.
 
 Multiple installer images can be found on the Github Release page. The postfix `-live` represents master and `-minimal` lightweight branch builds.
 
-<img src=https://i.postimg.cc/gJbhCt2K/Screenshot-2026-06-21-at-21-52-59-Releases-tabletseeker-mobian.png width=45% height=75%>
-<img src=https://i.postimg.cc/XJK54KrC/Screenshot-2026-06-21-at-21-53-14-Releases-tabletseeker-mobian.png width=45% height=75%>
+<img src=https://i.postimg.cc/gJbhCt2K/Screenshot-2026-06-21-at-21-52-59-Releases-tabletseeker-mobian.png width=60% height=75%>
+<img src=https://i.postimg.cc/XJK54KrC/Screenshot-2026-06-21-at-21-53-14-Releases-tabletseeker-mobian.png width=60% height=75%>
 
 Images featuring a custom kernel for specific devices carry an additional identifier. In the following example, the linux-surface kernel for Surface Pro devices has been included. 
 
-<img src=https://i.postimg.cc/XJK54Kr5/Screenshot-2026-06-21-at-21-53-29-Releases-tabletseeker-mobian.png width=45% height=75%>
+<img src=https://i.postimg.cc/XJK54Kr5/Screenshot-2026-06-21-at-21-53-29-Releases-tabletseeker-mobian.png width=60% height=75%>
 
 #### Test with Qemu
 You can also run images locally using qemu and even install it to a .qcow2 disk.
@@ -417,7 +418,6 @@ To build a `testing` image based on forky, use `-x forky` , or `-x bookworm` for
   
       [![Webapp Tutorial](https://i.postimg.cc/ZR5WjZDj/1.png)](https://www.youtube.com/watch?v=pznHxmxfqPY&t=44s)
 
-
 [🔼 Back to Top](#Roadmap)
 
 ## Configuration
@@ -425,32 +425,32 @@ To build a `testing` image based on forky, use `-x forky` , or `-x bookworm` for
 
 1. The system natively uses an On-Screen-Keyboard during touch operation and automatically switches to Mouse and Keyboard once detected.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/4.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/4.png width=55% height=55%>
 
 2. Mobian is designed to be 100% Google free, however it is still possible to connect accounts should users absolutely require this functionality. (Don't)
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/5.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/5.png width=55% height=55%>
 
 3. Multiple backgrounds come pre-installed. Custom background images can be overlayed during building.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/7.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/7.png width=55% height=55%>
 
 4. Dark Mode and various color schemes are available out of the box. 
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/8.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/8.png width=55% height=55%>
 
 5. Workspace management and multi-tasking features can also be leveraged. 
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/9.png width=75% height=75%>
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/10.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/9.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/10.png width=55% height=55%>
 
 6. Devices like the Surface Pro 8,9,10 with higher refresh rates will be adjustable in the display menu.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/11.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/11.png width=55% height=55%>
 
 7. Wireguard VPN connections are extremely power efficient on mobile devices thanks to mainline support.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/12.png width=75% height=75%>
+   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/12.png width=55% height=55%>
 
 [🔼 Back to Top](#Roadmap)
 
@@ -458,5 +458,10 @@ To build a `testing` image based on forky, use `-x forky` , or `-x bookworm` for
 Big thanks to the developers @mobian-team. \
 The original project can be found here: \
 https://salsa.debian.org/Mobian-team/mobian-recipes
+
+## Donations 💗
+ Bitcoin Address: bc1qxaf820c6zynvlqv62xkyucd654e8j2xqxc4nmw?message=Mobian
+ 
+ <img src=https://i.postimg.cc/BbxdX478/Screenshot-2026-06-22-11-58-33.png width=10% height=10%>
 
 [🔼 Back to Top](#Roadmap)
