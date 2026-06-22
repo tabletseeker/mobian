@@ -138,7 +138,7 @@ jobs:
           [ "${{ github.event.inputs.use_intel }}" = "true" ] && ARGS+=("-L")
           
           # Automated path detector: If files exist in kernel/, append -k cleanly to build.sh
-          if [ -n "$(ls -A kernel/ 2>/dev/null)" ]; then
+          if ls kernel/linux-image-*.deb >/dev/null 2>&1; then
             echo "Kernel directory populated. Enabling custom kernel build option (-k)..."
             ARGS+=("-k")
           fi
