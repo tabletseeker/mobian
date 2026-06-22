@@ -1,6 +1,6 @@
 <img src=https://i.ibb.co/QF5DsRRL/test.png width=64% height=58%>
 
-A 100% Debian Linux, free, privacy focused, open-source operating system for touch devices, designed to liberate users from any kind of Google or third party surveilance, data collection and security concerns. Only official Debian sources are used, meaning no third party repositories, packages or code of any kind, while granting users complete control over every single package that is installed. The native implementation of custom kernels with the included build recipes enables support for almost any brand/model of x86-x64 tablet or lap-top, such as Surface Pro 3-10, Zenbook, Thinkpad, Chromebook etc.  and a range of ARM phones. Additionally, custom or deb packages and files of any kind can also be included. The mobian build-script produces personalized images, with unlimited customization of any available setting and device behavior.
+A 100% Debian Linux, free, privacy focused, open-source operating system targeting x86-x64 touch devices, designed to liberate users from any kind of Google or third party surveilance, data collection and security concerns. This fork only uses official Debian sources, meaning no third party repositories, packages or code of any kind, while granting users complete control over every single package that is installed. The native implementation of custom kernels with the included build recipes enables support for almost any brand/model of x86-x64 tablet or lap-top, such as Surface Pro 3-10, Zenbook, Thinkpad, Chromebook etc.  and a range of ARM phones. Additionally, custom or deb packages and files of any kind can also be included. The mobian build-script produces personalized images, with unlimited customization of any available setting and device behavior.
 
 <img src=https://github.com/tabletseeker/mobian/blob/master/media/1.png width=100% height=100%>
 
@@ -107,12 +107,12 @@ This repo features two branches, which produce different installer images.
 
 Multiple installer images can be found on the Github Release page. The postfix `-live` represents master and `-minimal` lightweight branch builds.
 
-<img src=https://i.postimg.cc/gJbhCt2K/Screenshot-2026-06-21-at-21-52-59-Releases-tabletseeker-mobian.png width=60% height=75%>
-<img src=https://i.postimg.cc/XJK54KrC/Screenshot-2026-06-21-at-21-53-14-Releases-tabletseeker-mobian.png width=60% height=75%>
+<img src=https://i.postimg.cc/50jTvBrL/live.png width=60% height=75%>
+<img src=https://i.postimg.cc/7hn3ZcNB/minimal.png width=60% height=75%>
 
 Images featuring a custom kernel for specific devices carry an additional identifier. In the following example, the linux-surface kernel for Surface Pro devices has been included. 
 
-<img src=https://i.postimg.cc/XJK54Kr5/Screenshot-2026-06-21-at-21-53-29-Releases-tabletseeker-mobian.png width=60% height=75%>
+<img src=https://i.postimg.cc/nrG4h51S/surface-minimal.png width=60% height=75%>
 
 #### Test with Qemu
 You can also run images locally using qemu and even install it to a .qcow2 disk.
@@ -140,9 +140,18 @@ You can also run images locally using qemu and even install it to a .qcow2 disk.
 
 #### Standard Image
 
-You can directly write a regular Mobian image to any device by using bmaptool, or run it inside Qemu as shown above.
+Regular Mobian images come with the default kernel package `linux-image-amd64` and don't have any additional options, title pre- or postfixes.
+
+<img src=https://i.postimg.cc/xCqhHvZ5/regular.png width=60% height=75%>
+
+You can directly write a regular Mobian image to any device by using bmaptool.
 
      sudo bmaptool copy <image> /dev/sdX
+
+It can also be run with Qemu using the following command.
+
+    qemu-system-x86_64 -drive format=raw,file=$(find . -type f -name "*.img" | tail -1) -enable-kvm -cpu host -device VGA,xres=1600,yres=1000 -global VGA.vgamem_mb=64 -m 2048 -smp cores=4 -drive  if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd
+
 
 ### For Phones & ARM Devices (SD Card)
 
