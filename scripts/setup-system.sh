@@ -86,7 +86,10 @@ EOF
     # B. ENVIRONMENT: Force OSK Icon in Phosh Tray
     # C. SQUEEKBOARD: Bypass Hardware Detection via Skeleton
     mkdir -p /etc/skel/.config/squeekboard
-    echo -e "---\nforce_osk: true" > /etc/skel/.config/squeekboard/config.yml
+    cat > /etc/skel/.config/squeekboard/config.yml << 'EOF'
+---
+force_osk: true
+EOF
 fi
 
 dconf update
