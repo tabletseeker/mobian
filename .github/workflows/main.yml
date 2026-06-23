@@ -219,26 +219,9 @@ jobs:
             NOTES="$NOTES"$'\n\n'"**Kernel Source:** https://github.com/${PROJECT}/releases/tag/${TARGET_TAG}"
           fi
 
-          # 6. FETCH PREVIOUS TIMELINE TAG EXCLUSIVELY MATCHING MINIMAL BUILDS
-          git fetch --tags --unshallow 2>/dev/null || git fetch --tags --depth=100
-
-          # Look backwards through history selecting only previous *-minimal releases
-          PREVIOUS_TAG=$(git tag --list "*-minimal" --sort=-committerdate | grep -v "$TAG_NAME" | head -n 1 || true)
-
-          # 7. Setup optional release flags dynamically based on target discovery
-          EXTRA_FLAGS=()
-          if [ -n "$PREVIOUS_TAG" ]; then
-            echo "Isolated minimalist timeline found. Prior matching baseline target: $PREVIOUS_TAG"
-            EXTRA_FLAGS+=("--notes-start-tag" "$PREVIOUS_TAG")
-          else
-            echo "First minimalist branch build detected. Creating clean historical release notes."
-          fi
-
-          # 8. Create the release in a single clean pass
+          # 6. Create the release in a single clean pass
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
-            --notes "$NOTES" \
-            "${EXTRA_FLAGS[@]}" \
-            --generate-notes || echo "Release already exists"
+            --notes "$NOTES"
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
