@@ -77,12 +77,18 @@ EOF
 echo "Applying user settings and OSK hardware bypass..."
     # Fix for the current Live User
     mkdir -p "/home/${USERNAME}/.config/squeekboard"
-    echo -e "---\nforce_osk: true" > "/home/${USERNAME}/.config/squeekboard/config.yml"
+    cat > "/home/${USERNAME}/.config/squeekboard/config.yml" << 'EOF'
+---
+force_osk: true
+EOF
     chown -R "$USERNAME":"$USERNAME" "/home/${USERNAME}/.config/squeekboard"
     
     # Fix for any future users (via Skeleton)
     mkdir -p /etc/skel/.config/squeekboard
-    echo -e "---\nforce_osk: true" > /etc/skel/.config/squeekboard/config.yml
+    cat > /etc/skel/.config/squeekboard/config.yml << 'EOF'
+---
+force_osk: true
+EOF
     
     # 1. Kill the directory blocking the service
     rm -rf /usr/lib/systemd/user/mobi.phosh.OSK.service
