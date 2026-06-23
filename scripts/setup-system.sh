@@ -18,7 +18,12 @@ echo "127.0.1.1 ${USERNAME}" >> /etc/hosts
 
 # 2. OSK, Power & Hardware Overrides
 mkdir -p /etc/dconf/profile
-echo -e "user-db:user\nsystem-db:local" > /etc/dconf/profile/user
+
+cat > /etc/dconf/profile/user << 'EOF'
+user-db:user
+system-db:local
+EOF
+
 mkdir -p "$DEST_DIR"
 
 cat >> "$DEST_DIR/01-fixes" << EOF
