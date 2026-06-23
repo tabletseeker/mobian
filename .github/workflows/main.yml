@@ -227,10 +227,31 @@ jobs:
             NOTES="$NOTES"$'\n\n'"**Kernel Source:** https://github.com/${PROJECT}/releases/tag/${TARGET_TAG}"
           fi
 
-          # 7. Create and upload to the release
+          # 7. FETCH PREVIOUS TAG MATCHING ONLY THIS EXPLICIT IMAGE PROFILE
+          git fetch --tags --unshallow 2>/dev/null || git fetch --tags --depth=100
+
+          if [ "$BUILD_TYPE" = "installer" ] || [[ "$TAG_NAME" == *"-live"* ]]; then
+            # Look backwards targeting only previous installer configurations
+            PREVIOUS_TAG=$(git tag --list "*installer*" --sort=-committerdate | grep -v "$TAG_NAME" | head -n 1 || true)
+          else
+            # Look backwards targeting only standard regular images (ignores installer tags)
+            PREVIOUS_TAG=$(git tag --sort=-committerdate | grep -v "installer" | grep -v "$TAG_NAME" | head -n 1 || true)
+          fi
+
+          # 8. Setup optional release flags dynamically based on target discovery
+          EXTRA_FLAGS=()
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Isolated timeline found. Prior matching baseline target: $PREVIOUS_TAG"
+            EXTRA_FLAGS+=("--notes-start-tag" "$PREVIOUS_TAG")
+          else
+            echo "First standalone profile build detected. Creating clean historical release notes."
+          fi
+
+          # 9. Create the release in a single clean pass
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
             --notes "$NOTES" \
+            "${EXTRA_FLAGS[@]}" \
             --generate-notes || echo "Release already exists"
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
