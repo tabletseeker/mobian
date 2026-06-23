@@ -50,7 +50,7 @@ button-layout='appmenu:'
 
 [org/gnome/desktop/interface]
 cursor-blink=true
-toolkit-accessibility=true
+toolkit-accessibility=false
 
 [org/gnome/desktop/input-sources]
 sources=[('xkb', 'us')]
