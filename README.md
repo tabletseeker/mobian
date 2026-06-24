@@ -95,7 +95,7 @@ This repo features two branches, which produce different installer images.
       ```
 2. The following command will create a bootable USB Stick.
       ```sh
-      dd if=mobian-installer-amd64-phosh-20260414.img of=/dev/sdX bs=4096K status=progress
+      dd if=mobian-<release>.img of=/dev/sdX bs=4096K status=progress
       ```
 
 3.  Launch the installer and complete all steps.
@@ -462,14 +462,15 @@ To build a `testing` image based on forky, use `-x forky` , or `-x bookworm` for
 
    <img src=https://github.com/tabletseeker/mob_test/blob/main/img/12.png width=55% height=55%>
 
-[🔼 Back to Top](#Roadmap)
-
 ## Credits
 Big thanks to the developers @mobian-team. \
 The original project can be found here: \
 https://salsa.debian.org/Mobian-team/mobian-recipes
 
 ## Donations 💗
+ All major feature requests are implemented and this project will be maintained for most devices.
+ Any support is appreciated.
+
  Bitcoin Address: bc1qxaf820c6zynvlqv62xkyucd654e8j2xqxc4nmw
  
  <img src=https://i.postimg.cc/BbxdX478/Screenshot-2026-06-22-11-58-33.png width=10% height=10%>
