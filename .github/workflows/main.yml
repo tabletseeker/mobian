@@ -207,7 +207,7 @@ jobs:
             KERNEL_STR="\`$PROJECT\` (@$TARGET_TAG)"
             SOURCE_LINK="* 🔗 **Kernel Source:** [$PROJECT @ $TARGET_TAG](https://github.com/${PROJECT}/releases/tag/${TARGET_TAG})"
           else
-            KERNEL_STR="stock"
+            KERNEL_STR="\`stock\`"
             SOURCE_LINK=""
           fi
 
