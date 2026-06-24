@@ -172,14 +172,14 @@ jobs:
           
           : "${PROJECT:=default}"
           
-          # 1. Parse repository project name cleanly to a short-name string (e.g. linux-surface -> surface)
+          # 1. Parse repository project name cleanly to a short-name string
           if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
             SHORT_NAME=$(echo "$PROJECT" | sed 's|.*/||; s|linux-||g; s|-kernel||g')
           else
             SHORT_NAME=""
           fi
 
-          # 2. Determine unique minimal tag names based on context
+          # 2. Select the base tag name matching Minimal rules (FIXED syntax)
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ -n "$SHORT_NAME" ]; then
               TAG_NAME="${{ env.IMAGE_NAME }}-${SHORT_NAME}-minimal"
@@ -189,39 +189,64 @@ jobs:
           else
             TAG_NAME="${{ github.ref_name }}"
             [ -n "$SHORT_NAME" ] && TAG_NAME="${TAG_NAME}-${SHORT_NAME}"
+            TAG_NAME="${TAG_NAME}-minimal"
           fi
 
-          # 3. Initialize and format the primary metadata notes block (Updated Text Labels)
-          if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
-            NOTES="* **Kernel Project:** $PROJECT"
-            NOTES="$NOTES"$'\n'"* **Kernel Tag:** $TARGET_TAG"
-          else
-            NOTES="* **Custom Kernel:** False"
+          # 3. Handle the build type fallback logic
+          BUILD_TYPE="${{ github.event.inputs.build_type }}"
+          : "${BUILD_TYPE:=${{ env.DEFAULT_BUILD_TYPE }}}"
+
+          # 4. Append "-installer" if the build type is an installer (Replacing -live logic)
+          if [ "$BUILD_TYPE" = "installer" ] ; then
+            TAG_NAME="${TAG_NAME}-installer"
           fi
           
-          # 4. Append operational options to NOTES (Asterisk pulled inside the quotes)
-          NOTES="$NOTES"$'\n'"* **Debian Suite:** ${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
+          # 5. Map variable states to clean UI indicators for the layout
+          SUITE_VAL="${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
           
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_inputs.use_keyboard }}" = "true" ]; then
-            NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Enabled"
-          else
-            NOTES="$NOTES"$'\n'"* **Default On-Screen Keyboard:** Disabled"
-          fi
-
-          if [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_inputs.use_intel }}" = "true" ]; then
-            NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Enabled"
-          else
-            NOTES="$NOTES"$'\n'"* **Intel Chipset Support:** Disabled"
-          fi
-
-          # 5. INJECT EXPLICIT KERNEL SOURCE LINK ABOVE FULL CHANGELOG
           if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
-            NOTES="$NOTES"$'\n\n'"**Kernel Source:** https://github.com/${PROJECT}/releases/tag/${TARGET_TAG}"
+            KERNEL_STR="\`$PROJECT\` (@$TARGET_TAG)"
+            SOURCE_LINK="* 🔗 **Kernel Source:** [$PROJECT @ $TARGET_TAG](https://github.com/${PROJECT}/releases/tag/${TARGET_TAG})"
+          else
+            KERNEL_STR="Stock"
+            SOURCE_LINK=""
           fi
 
-          # 6. Create the release in a single clean pass
+          if [ "${{ github.event.inputs.use_keyboard }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; then
+            KEYBOARD_STR="🟢 Enabled"
+          else
+            KEYBOARD_STR="🔴 Disabled"
+          fi
+
+          if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then
+            INTEL_STR="🟢 Enabled"
+          else
+            INTEL_STR="🔴 Disabled"
+          fi
+
+          # 6. Generate the structured Markdown using a safe, headerless table format
+          {
+            echo ""
+            echo "| **Target** | \`${{ github.event.inputs.device || env.DEFAULT_DEVICE }}\` |"
+            echo "| :--- | :--- |"
+            echo "| **Type** | \`$BUILD_TYPE (Minimal)\` |"
+            echo "| **Kernel** | $KERNEL_STR |"
+            echo "| **Suite** | \`$SUITE_VAL\` |"
+            echo "| **OSK** | $KEYBOARD_STR |"
+            echo "| **Intel Support** | $INTEL_STR |"
+            if [ -n "$SOURCE_LINK" ]; then
+              echo ""
+              echo "---"
+              echo ""
+              echo "$SOURCE_LINK"
+            fi
+          } > release_notes.md
+
+          # 7. Create the release targeting your default branch
           gh release create "$TAG_NAME" \
             --title "$TAG_NAME" \
-            --notes "$NOTES"
+            --target "${{ github.event.repository.default_branch }}" \
+            --notes-file release_notes.md
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
+
