@@ -165,7 +165,7 @@ jobs:
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PROJECT="${{ github.event.inputs.kernel_project }}"
           TARGET_TAG="${{ github.event.inputs.kernel_tag }}"
@@ -179,36 +179,38 @@ jobs:
             SHORT_NAME=""
           fi
 
-          # 2. Select the base tag name matching Minimal rules (Consistent GitHub Context format)
+          # 2. Select the base tag name matching your branch rules (Fixed consistency)
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ -n "$SHORT_NAME" ]; then
-              TAG_NAME="${{ env.IMAGE_NAME }}-${SHORT_NAME}-minimal"
+              TAG_NAME="${{ env.IMAGE_NAME }}-${SHORT_NAME}"
             else
-              TAG_NAME="${{ env.IMAGE_NAME }}-minimal"
+              TAG_NAME="${{ env.IMAGE_NAME }}"
             fi
           else
             TAG_NAME="${{ github.ref_name }}"
             [ -n "$SHORT_NAME" ] && TAG_NAME="${TAG_NAME}-${SHORT_NAME}"
-            TAG_NAME="${TAG_NAME}-minimal"
           fi
 
           # 3. Handle the build type fallback logic
           BUILD_TYPE="${{ github.event.inputs.build_type }}"
           : "${BUILD_TYPE:=${{ env.DEFAULT_BUILD_TYPE }}}"
 
-          # 4. Append "-installer" if the build type is an installer
+          # 4. Append "-installer" if chosen, and ALWAYS append "-minimal" at the absolute end
           if [ "$BUILD_TYPE" = "installer" ] ; then
             TAG_NAME="${TAG_NAME}-installer"
           fi
           
-          # 5. Map variable states to clean UI indicators for the layout (Removed Backticks & Shortened Repo Name)
+          # This guarantees -minimal is appended in both cases (regular and installer)
+          TAG_NAME="${TAG_NAME}-minimal"
+          
+          # 5. Map variable states to clean UI indicators for the layout
           SUITE_VAL="${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
           DEVICE_VAL="${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
           
           if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
             REPO_NAME="${PROJECT#*/}"
-            KERNEL_STR="$REPO_NAME ($TARGET_TAG)"
-            SOURCE_LINK="* 🔗 **Kernel Source:** [$PROJECT @ $TARGET_TAG](https://github.com/${PROJECT}/releases/tag/${TARGET_TAG})"
+            KERNEL_STR="$REPO_NAME (@$TARGET_TAG)"
+            SOURCE_LINK="* 🔗 **Kernel Source:** [$PROJECT @ $TARGET_TAG](https://github.com{PROJECT}/releases/tag/${TARGET_TAG})"
           else
             KERNEL_STR="stock"
             SOURCE_LINK=""
@@ -218,7 +220,7 @@ jobs:
             KEYBOARD_STR="🟢 Enabled"
           else
             KEYBOARD_STR="🔴 Disabled"
-          fi
+          }
 
           if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then
             INTEL_STR="🟢 Enabled"
@@ -251,4 +253,5 @@ jobs:
             --notes-file release_notes.md
 
           gh release upload "$TAG_NAME" *.img.xz *.img.bmap *.sha256sums --clobber
+
 
