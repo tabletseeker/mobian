@@ -179,7 +179,7 @@ jobs:
             SHORT_NAME=""
           fi
 
-          # 2. Select the base tag name matching Minimal rules (FIXED syntax)
+          # 2. Select the base tag name matching Minimal rules (Consistent GitHub Context format)
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ -n "$SHORT_NAME" ]; then
               TAG_NAME="${{ env.IMAGE_NAME }}-${SHORT_NAME}-minimal"
@@ -196,19 +196,21 @@ jobs:
           BUILD_TYPE="${{ github.event.inputs.build_type }}"
           : "${BUILD_TYPE:=${{ env.DEFAULT_BUILD_TYPE }}}"
 
-          # 4. Append "-installer" if the build type is an installer (Replacing -live logic)
+          # 4. Append "-installer" if the build type is an installer
           if [ "$BUILD_TYPE" = "installer" ] ; then
             TAG_NAME="${TAG_NAME}-installer"
           fi
           
-          # 5. Map variable states to clean UI indicators for the layout
+          # 5. Map variable states to clean UI indicators for the layout (Removed Backticks & Shortened Repo Name)
           SUITE_VAL="${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
+          DEVICE_VAL="${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
           
           if [ "$PROJECT" != "default" ] && [ -n "$TARGET_TAG" ]; then
-            KERNEL_STR="\`$PROJECT\` (@$TARGET_TAG)"
+            REPO_NAME="${PROJECT#*/}"
+            KERNEL_STR="$REPO_NAME ($TARGET_TAG)"
             SOURCE_LINK="* 🔗 **Kernel Source:** [$PROJECT @ $TARGET_TAG](https://github.com/${PROJECT}/releases/tag/${TARGET_TAG})"
           else
-            KERNEL_STR="\`stock\`"
+            KERNEL_STR="stock"
             SOURCE_LINK=""
           fi
 
@@ -224,14 +226,14 @@ jobs:
             INTEL_STR="🔴 Disabled"
           fi
 
-          # 6. Generate the structured Markdown using a safe, headerless table format
+          # 6. Generate the structured Markdown (Clean Layout, No Gray Frames)
           {
             echo ""
-            echo "| **Target** | \`${{ github.event.inputs.device || env.DEFAULT_DEVICE }}\` |"
+            echo "| **Target** | $DEVICE_VAL |"
             echo "| :--- | :--- |"
-            echo "| **Type** | \`$BUILD_TYPE (Minimal)\` |"
+            echo "| **Type** | $BUILD_TYPE (Minimal) |"
             echo "| **Kernel** | $KERNEL_STR |"
-            echo "| **Suite** | \`$SUITE_VAL\` |"
+            echo "| **Suite** | $SUITE_VAL |"
             echo "| **OSK** | $KEYBOARD_STR |"
             echo "| **Intel Support** | $INTEL_STR |"
             if [ -n "$SOURCE_LINK" ]; then
