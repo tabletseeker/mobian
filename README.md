@@ -19,8 +19,10 @@ A 100% Debian Linux, free, privacy focused, open-source operating system targeti
 - [ ] [Build Preparation](https://github.com/tabletseeker/mobian/blob/master/README.md#before-you-start)
 - [ ] [Custom Apps](https://github.com/tabletseeker/mobian/blob/master/README.md#webapp-manager)
 - [ ] [System Settings](https://github.com/tabletseeker/mobian/blob/master/README.md#configuration)
-- [ ] [Credits](https://github.com/tabletseeker/mobian/blob/master/README.md#credits)
+- [ ] [Credits](https://github.com/tabletseeker/mobian/blob/master/README.md#credits-)
 - [ ] [Donations](https://github.com/tabletseeker/mobian/blob/master/README.md#donations-)
+- [ ] [Community](https://github.com/tabletseeker/mobian/blob/master/README.md#community-)
+
 
 ## Sneak Peek
 - [x] Preview
@@ -462,17 +464,23 @@ To build a `testing` image based on forky, use `-x forky` , or `-x bookworm` for
 
    <img src=https://github.com/tabletseeker/mob_test/blob/main/img/12.png width=55% height=55%>
 
-## Credits
-Big thanks to the developers @mobian-team. \
+## Credits 🥇
+**Huge** thanks to the developers @mobian-team! \
+Please support their work, without them none of this would be possible. \
 The original project can be found here: \
 https://salsa.debian.org/Mobian-team/mobian-recipes
 
 ## Donations 💗
- All major feature requests are implemented and this project will be maintained for most devices.
+ This project will be maintained for most devices, with all major or device specific features being implemented upon request.
  Any support is appreciated.
 
  Bitcoin Address: bc1qxaf820c6zynvlqv62xkyucd654e8j2xqxc4nmw
  
  <img src=https://i.postimg.cc/BbxdX478/Screenshot-2026-06-22-11-58-33.png width=10% height=10%>
+
+## Community 🤝
+For any questions, feature requests, announcements and general communication, head over to the Discussions section. \
+https://github.com/tabletseeker/mobian/discussions
+
 
 [🔼 Back to Top](#Roadmap)
