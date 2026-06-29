@@ -90,5 +90,5 @@ actions:
       {{ else }}
       # Sid and Forky
       - systemd-repart
-      - xfconf-gsettings-backend
+#     - xfconf-gsettings-backend
       {{ end }}
