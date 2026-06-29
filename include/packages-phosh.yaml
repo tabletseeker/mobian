@@ -65,7 +65,6 @@ actions:
       - phosh-tour
       - portfolio-filemanager
       - powersupply-gtk
-      - webext-ublock-origin-firefox
 
       # Conditional Release Packages      
       {{ if eq $debian_suite "bookworm" }}
