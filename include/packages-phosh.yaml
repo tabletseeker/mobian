@@ -13,7 +13,6 @@ actions:
     packages:
       # mobian-phosh-base
       - phosh-full
-      - phosh-core
       - feedbackd-device-themes
       - at-spi2-core
       - iio-sensor-proxy
@@ -22,7 +21,7 @@ actions:
       - fonts-noto-color-emoji
       - fonts-noto-mono
       - fonts-noto-ui-core
-    # - mesa-vdpau-drivers
+#     - mesa-vdpau-drivers
       - wayland-protocols
       - libgdk-pixbuf2.0-bin
       - libcanberra-gtk3-module
@@ -31,22 +30,13 @@ actions:
       - xdg-desktop-portal-wlr
       - xdg-user-dirs
       # mobian-tweaks-phosh
-      - adduser
       - dconf-cli
       - feedbackd
-      - dconf-gsettings-backend
-      # mobian-tweaks-common
-      - dconf-gsettings-backend
-      - adduser
-      # mobile-tweaks-common
-      - dconf-gsettings-backend
-      - adduser
       # mobian-phosh-extras
       - fwupd
       - gthd
       - qtwayland5
       - qt6-wayland
-      - phosh-full
       # mobian-multimedia
       - ffmpeg
       - gstreamer1.0-gl
@@ -58,7 +48,6 @@ actions:
       - cracklib-runtime # needed for pw change in UI, but g-c-c only recommends it
       - chatty
       - endeavour
-      - epiphany-browser
       - firefox-esr
       - geary
       - gnome-calculator
@@ -94,9 +83,8 @@ actions:
       - phosh-wallpapers
       - sound-theme-phosh
       - libspa-0.2-libcamera
-      - xfconf-gsettings-backend
       - gnome-software-plugin-deb
-      - gnome-software-plugin-flatpak
+#     - gnome-software-plugin-flatpak
       {{ end }}
       #Sid Exceptions
       {{ if ne $debian_suite "sid" }}
@@ -107,4 +95,3 @@ actions:
     description: Disable getty in the Phosh environment
     chroot: true
     command: systemctl disable getty@.service
-
