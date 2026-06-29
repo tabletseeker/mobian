@@ -83,6 +83,9 @@ actions:
       # mobile-tweaks-common
       - dconf-gsettings-backend
       - adduser
+      - mobile-tweaks-common
+      - power-profiles-daemon
+      - zram-tools
       
       # Conditional Release Packages
       {{ if eq $debian_suite "bookworm" }}
