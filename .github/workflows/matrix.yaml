@@ -1,4 +1,4 @@
-name: 🤖 Matrix Builds
+name: Matrix Builds
 
 on:
   push:
