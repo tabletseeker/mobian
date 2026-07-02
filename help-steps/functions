@@ -124,7 +124,7 @@ debos_installfs() {
 		  ${DEBOS_CMD} ${ARGS} "rootfs-device.yaml"
 		fi
 		# Convert rootfs tarball to squashfs for inclusion in the installer image
-		[ -n "${comp}" ] || comp="arm"
+		[ -n "${comp:-}" ] || comp="arm"
         rm -f "rootfs-${device}-${environment}.sqfs"
 		zcat "rootfs-${device}-${environment}.tar.gz" | tar2sqfs -c xz -b 1048576 -X "${comp}" "rootfs-${device}-${environment}.sqfs"
 	fi
