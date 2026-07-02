@@ -1,0 +1,340 @@
+name: 🤖 Matrix Builds
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      build_regular:
+        description: 'Build Regular Image?'
+        required: false
+        type: boolean
+        default: true
+      build_installer:
+        description: 'Build Installer Image?'
+        required: false
+        type: boolean
+        default: true
+      build_custom:
+        description: 'Build Custom Kernel Image?'
+        required: false
+        type: boolean
+        default: true
+      device:
+        description: 'Architecture'
+        required: true
+        type: choice
+        options: [amd64, pinephone, pinephonepro, librem5, pinetab]
+        default: amd64
+      suite:
+        description: 'Suite'
+        required: true
+        type: choice
+        options: [sid, forky, trixie, bookworm]
+        default: forky
+      kernel_project:
+        description: 'Upstream Kernel'
+        required: true
+        type: choice
+        options:
+          - default
+          - linux-surface/linux-surface
+          - t2linux/linux-t2
+          - zen-kernel/zen-kernel
+        default: linux-surface/linux-surface
+      kernel_tag:
+        description: 'Kernel Tag'
+        required: false
+        type: string
+        default: 'debian-6.19.8-3'
+      use_intel:
+        description: 'Intel Chipset Support?'
+        required: false
+        type: boolean
+        default: true
+      use_keyboard:
+        description: 'Default On-Screen-Keyboard?'
+        required: false
+        type: boolean
+        default: true
+      create_release:
+        description: 'Create a formal GitHub Release?'
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  DEFAULT_DEVICE: 'amd64'
+  DEFAULT_SUITE: 'forky'
+  DEFAULT_BUILD_TYPE: 'regular'
+  SCHEDULED_KERNEL_PROJECT: 'linux-surface/linux-surface'
+  SCHEDULED_KERNEL_TAG: 'debian-6.19.8-3'
+
+jobs:
+  prepare_matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      profiles: ${{ steps.set-matrix.outputs.profiles }}
+    steps:
+      - id: set-matrix
+        run: |
+          PROFILES="[]"
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "push" ]; then
+            PROFILES='["Regular", "Installer", "Custom Kernel"]'
+          else
+            if [ "${{ github.event.inputs.build_regular }}" = "true" ]; then PROFILES=$(echo "$PROFILES" | jq '. + ["Regular"]'); fi
+            if [ "${{ github.event.inputs.build_installer }}" = "true" ]; then PROFILES=$(echo "$PROFILES" | jq '. + ["Installer"]'); fi
+            if [ "${{ github.event.inputs.build_custom }}" = "true" ]; then PROFILES=$(echo "$PROFILES" | jq '. + ["Custom Kernel"]'); fi
+          fi
+          echo "profiles=$(echo "$PROFILES" | jq -c .)" >> $GITHUB_OUTPUT
+
+  build:
+    needs: prepare_matrix
+    runs-on: ubuntu-latest
+    name: 🔨 Build Node » ${{ matrix.build_profile }}
+    strategy:
+      fail-fast: false
+      matrix:
+        build_profile: ${{ fromJson(needs.prepare_matrix.outputs.profiles) }}
+        
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Fast Free Space
+        run: |
+          sudo rm -rf /usr/local/lib/android & 
+          sudo rm -rf /usr/share/dotnet &
+          wait
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debos bmap-tools squashfs-tools-ng xz-utils tar qemu-user-static wget jq
+
+      - name: Process Custom Kernel
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p kernel/
+          
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TARGET_REPO="${{ env.SCHEDULED_KERNEL_PROJECT }}"
+            ACTIVE_TAG="${{ env.SCHEDULED_KERNEL_TAG }}"
+          else
+            TARGET_REPO="${{ github.event.inputs.kernel_project }}"
+            ACTIVE_TAG="${{ github.event.inputs.kernel_tag }}"
+          fi
+
+          if [ "${{ matrix.build_profile }}" = "Custom Kernel" ] && [ "$TARGET_REPO" != "default" ] && [ -n "$ACTIVE_TAG" ]; then
+            echo "Downloading custom kernel binaries from $TARGET_REPO at tag $ACTIVE_TAG..."
+            gh release download "$ACTIVE_TAG" --repo "$TARGET_REPO" \
+              --pattern "linux-image-*.deb" --pattern "linux-headers-*.deb" --dir kernel/ --clobber
+          fi
+
+          echo "Verified kernel/ folder deployment contents:"
+          ls -la kernel/
+
+      - name: Run Build Script
+        run: |
+          find . -name "*.sh" -exec chmod +x {} +
+          
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            DEVICE="${{ env.DEFAULT_DEVICE }}"
+            SUITE="${{ env.DEFAULT_SUITE }}"
+            INTEL="true"
+            OSK="true"
+          else
+            DEVICE="${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
+            SUITE="${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
+            INTEL="${{ github.event.inputs.use_intel }}"
+            OSK="${{ github.event.inputs.use_keyboard }}"
+          fi
+          
+          case "${{ matrix.build_profile }}" in
+            "Regular")       B_TYPE="regular"   ;;
+            "Installer")     B_TYPE="installer" ;;
+            "Custom Kernel") B_TYPE="installer" ;;
+          esac
+
+          ARGS=("-t" "$DEVICE" "-x" "$SUITE" "-Q" "15G" "-z" "-v")
+          [ "$B_TYPE" = "installer" ] && ARGS+=("-o")
+          [ "$OSK" = "true" ] && ARGS+=("-K")
+          [ "$INTEL" = "true" ] && ARGS+=("-L")
+          if ls kernel/linux-image-*.deb >/dev/null 2>&1; then ARGS+=("-k"); fi
+          
+          sudo ./build.sh "${ARGS[@]}"
+          
+          RAW_NAME=$(ls mobian-*.img.xz | head -n 1 | sed 's/.img.xz//')
+          echo "IMAGE_NAME=$RAW_NAME" >> $GITHUB_ENV
+
+      - name: Generate Release Checksums
+        run: |
+          sha256sum *.img.xz > "${{ env.IMAGE_NAME }}.sha256sums"
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_NAME }}
+          path: |
+            *.img.xz
+            *.img.bmap
+            *.sha256sums
+
+      - name: Generate Release Notes Text Layout
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true' || github.event_name == 'schedule'
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TARGET_REPO="${{ env.SCHEDULED_KERNEL_PROJECT }}"
+            ACTIVE_TAG="${{ env.SCHEDULED_KERNEL_TAG }}"
+            DEVICE_VAL="${{ env.DEFAULT_DEVICE }}"
+            SUITE_VAL="${{ env.DEFAULT_SUITE }}"
+            KEYBOARD_STR="🟢 Enabled"
+            INTEL_STR="🟢 Enabled"
+          else
+            TARGET_REPO="${{ github.event.inputs.kernel_project }}"
+            ACTIVE_TAG="${{ github.event.inputs.kernel_tag }}"
+            DEVICE_VAL="${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
+            SUITE_VAL="${{ github.event.inputs.suite || env.DEFAULT_SUITE }}"
+            
+            if [ "${{ github.event.inputs.use_keyboard }}" = "true" ]; then KEYBOARD_STR="🟢 Enabled"; else KEYBOARD_STR="🔴 Disabled"; fi
+            if [ "${{ github.event.inputs.use_intel }}" = "true" ]; then INTEL_STR="🟢 Enabled"; else INTEL_STR="🔴 Disabled"; fi
+          fi
+
+          if [ "${{ matrix.build_profile }}" = "Custom Kernel" ] && [ "$TARGET_REPO" != "default" ]; then
+            SHORT_NAME=$(echo "$TARGET_REPO" | sed 's|.*/||; s|linux-||g; s|-kernel||g')
+            KERNEL_STR="$SHORT_NAME (@$ACTIVE_TAG)"
+            SOURCE_LINK="🔗 **Kernel Source:** [$TARGET_REPO@$ACTIVE_TAG](https://github.com/${TARGET_REPO}/releases/tag/${ACTIVE_TAG})"
+          else
+            KERNEL_STR="stock"
+            SOURCE_LINK=""
+            SHORT_NAME=""
+          fi
+
+          case "${{ matrix.build_profile }}" in
+            "Regular")       BUILD_TYPE="regular"   ;;
+            "Installer")     BUILD_TYPE="installer" ;;
+            "Custom Kernel") BUILD_TYPE="installer" ;;
+          esac
+
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            TAG_NAME="${{ env.IMAGE_NAME }}"
+            [ -n "$SHORT_NAME" ] && TAG_NAME="${TAG_NAME}-${SHORT_NAME}"
+          else
+            TAG_NAME="${{ github.ref_name }}"
+            if [ -n "$SHORT_NAME" ] && ! echo "$TAG_NAME" | grep -q "$SHORT_NAME"; then
+              TAG_NAME="${TAG_NAME}-${SHORT_NAME}"
+            fi
+          fi
+
+          {
+            echo ""
+            echo "| **Target** | $DEVICE_VAL |"
+            echo "| :--- | :--- |"
+            echo "| **Type** | $BUILD_TYPE |"
+            echo "| **Kernel** | $KERNEL_STR |"
+            echo "| **Suite** | $SUITE_VAL |"
+            echo "| **OSK** | $KEYBOARD_STR |"
+            echo "| **Intel Support** | $INTEL_STR |"
+            if [ -n "$SOURCE_LINK" ]; then
+              echo ""
+              echo "---"
+              echo ""
+              echo "$SOURCE_LINK"
+            fi
+          } > release_notes.md
+          
+          echo "FINAL_TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+
+      - name: Deploy Production Images to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.create_release == 'true' || github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "${{ env.FINAL_TAG_NAME }}" >/dev/null 2>&1; then
+            gh release create "${{ env.FINAL_TAG_NAME }}" \
+              --title "${{ env.FINAL_TAG_NAME }}" \
+              --target "${{ github.event.repository.default_branch }}" \
+              --notes-file release_notes.md
+          else
+            echo -e "\n\n$(cat release_notes.md)" > append_notes.md
+            gh release edit "${{ env.FINAL_TAG_NAME }}" --notes-file append_notes.md
+          fi
+          
+          gh release upload "${{ env.FINAL_TAG_NAME }}" *.img.xz *.img.bmap *.sha256sums --clobber
+
+      - name: Purge Oldest Redundant Builds
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "=== Auditing Repository Historical Build Footprints ==="
+          
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TARGET_REPO="${{ env.SCHEDULED_KERNEL_PROJECT }}"
+          else
+            TARGET_REPO="${{ github.event.inputs.kernel_project }}"
+          fi
+
+          if [ "$TARGET_REPO" != "default" ] && [ -n "$TARGET_REPO" ]; then
+            CLEAN_KERN_KEY=$(echo "$TARGET_REPO" | sed 's|.*/||; s|linux-||g; s|-kernel||g')
+          else
+            CLEAN_KERN_KEY="stock"
+          fi
+
+          case "${{ matrix.build_profile }}" in
+            "Regular")       MATCH_KEY="regular"   ; KERN_KEY="stock"   ;;
+            "Installer")     MATCH_KEY="installer" ; KERN_KEY="stock"   ;;
+            "Custom Kernel") MATCH_KEY="installer" ; KERN_KEY="$CLEAN_KERN_KEY" ;;
+          esac
+
+          echo "Scanning for matching release tags containing elements: [$MATCH_KEY] and [$KERN_KEY]"
+
+          ALL_RELEASES_JSON=$(gh release list --limit 100 --json tagName)
+
+          if [ "${{ matrix.build_profile }}" = "Installer" ]; then
+            MATCHING_RELEASES=$(echo "$ALL_RELEASES_JSON" | jq -r --arg mk "mobian-installer" '
+              .[] | select(.tagName | contains($mk)) 
+
+              | select(.tagName | contains("custom") or contains("surface") or contains("t2") or contains("zen") | not) 
+              | .tagName')
+          elif [ "${{ matrix.build_profile }}" = "Custom Kernel" ]; then
+            MATCHING_RELEASES=$(echo "$ALL_RELEASES_JSON" | jq -r --arg mk "mobian-installer" --arg kk "$KERN_KEY" '
+              .[] | select(.tagName | contains($mk) and contains($kk)) | .tagName')
+          else
+            MATCHING_RELEASES=$(echo "$ALL_RELEASES_JSON" | jq -r --arg mk "mobian-" '
+              .[] | select(.tagName | contains($mk))
+
+              | select(.tagName | contains("installer") or contains("custom") | not)
+              | .tagName')
+          fi
+
+          mapfile -t RELEASES_ARRAY <<< "$MATCHING_RELEASES"
+          RELEASES_ARRAY=("${RELEASES_ARRAY[@]/#""/}")
+          COUNT=${#RELEASES_ARRAY[@]}
+
+          echo "Found $COUNT current historical releases matching this specific type specification."
+
+          if [ "$COUNT" -gt 2 ]; then
+            OLDEST_RELEASE_TAG="${RELEASES_ARRAY[-1]}"
+            echo "⚠️ Redundancy limit breached! Wiping oldest build: $OLDEST_RELEASE_TAG"
+
+            gh release delete "$OLDEST_RELEASE_TAG" --yes
+            gh api -X DELETE "repos/${{ github.repository }}/git/refs/tags/$OLDEST_RELEASE_TAG" 2>/dev/null || true
+
+            RUN_ID=$(gh run list --workflow="🤖 Automated Builds" --limit 100 --json databaseId,tagName,ref | jq -r --arg tag "$OLDEST_RELEASE_TAG" '.[] | select(.tagName==$tag or .ref==("refs/tags/"+$tag)) | .databaseId' | head -n 1)
+            
+            if [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ]; then
+              echo "Purging associated GitHub Action CI execution logs history ID: $RUN_ID"
+              gh run delete "$RUN_ID" --yes || true
+            fi
+            echo "Successfully cleaned up tracking footprint."
+          else
+            echo "Current historical inventory ($COUNT/2) remains inside safe limits. Skipping cleanup execution loop."
+          fi
