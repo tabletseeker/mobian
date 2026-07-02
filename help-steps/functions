@@ -69,7 +69,7 @@ naming_schemes() {
 	image_file="mobian-${device}-${environment}-$(date +%Y%m%d%H)"
 	if [ "$installer" ]; then
 	  image="installer"
-	  image_file="mobian-installer-${device}-${environment}-$(date +%Y%m%d)"
+	  image_file="mobian-installer-${device}-${environment}-$(date +%Y%m%d%H)"
 	fi
 
 	rootfs_file="rootfs-${arch}-${environment}.tar.gz"
