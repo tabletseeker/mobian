@@ -437,32 +437,32 @@ To build a `testing` image based on forky, use `-x forky` , or `-x bookworm` for
 
 1. The system natively uses an On-Screen-Keyboard during touch operation and automatically switches to Mouse and Keyboard once detected.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/4.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/4.png width=55% height=55%>
 
 2. Mobian is designed to be 100% Google free, however it is still possible to connect accounts should users absolutely require this functionality. (Don't)
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/5.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/5.png width=55% height=55%>
 
 3. Multiple backgrounds come pre-installed. Custom background images can be overlayed during building.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/7.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/7.png width=55% height=55%>
 
 4. Dark Mode and various color schemes are available out of the box. 
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/8.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/8.png width=55% height=55%>
 
 5. Workspace management and multi-tasking features can also be leveraged. 
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/9.png width=55% height=55%>
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/10.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/9.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/10.png width=55% height=55%>
 
 6. Devices like the Surface Pro 8,9,10 with higher refresh rates will be adjustable in the display menu.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/11.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/11.png width=55% height=55%>
 
 7. Wireguard VPN connections are extremely power efficient on mobile devices thanks to mainline support.
 
-   <img src=https://github.com/tabletseeker/mob_test/blob/main/img/12.png width=55% height=55%>
+   <img src=https://github.com/tabletseeker/mobian/blob/master/media/12.png width=55% height=55%>
 
 ## Credits 🥇
 **Huge** thanks to the developers @mobian-team! \
