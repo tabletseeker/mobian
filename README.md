@@ -1,4 +1,8 @@
-<img src=https://i.ibb.co/QF5DsRRL/test.png width=64% height=58%>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/tabletseeker/mobian/blob/master/media/logo_light.png" width=64% height=58%>
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/tabletseeker/mobian/blob/master/media/logo_dark.png" width=64% height=58%>
+  <img alt="Shows a black logo in light color mode and a white one in dark color mode.">
+</picture>
 
 A 100% Debian Linux, free, privacy focused, open-source operating system targeting x86-x64 touch devices, designed to liberate users from any kind of Google or third party surveilance, data collection and security concerns. This fork only uses official Debian sources, meaning no third party repositories, packages or code of any kind, while granting users complete control over every single package that is installed. The native implementation of custom kernels with the included build recipes enables support for almost any brand/model of x86-x64 tablet or lap-top, such as Surface Pro 3-10, Zenbook, Thinkpad, Chromebook etc.  and a range of ARM phones. Additionally, custom or deb packages and files of any kind can also be included. The mobian build-script produces personalized images, with unlimited customization of any available setting and device behavior.
 
