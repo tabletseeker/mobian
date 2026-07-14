@@ -15,6 +15,7 @@ actions:
       - locales
       - lvm2
       - ca-certificates
+      - cryptsetup
 
       # --- Essential Phosh Core (Replaces phosh-full) ---
       - phosh               # The Shell
