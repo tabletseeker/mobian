@@ -112,6 +112,12 @@ This repo features two branches, which produce different installer images.
     <img src=https://github.com/tabletseeker/mobian/blob/master/media/install4.png width=45% height=75%>
     <img src=https://github.com/tabletseeker/mobian/blob/master/media/install5.png width=45% height=75%>
 
+4. Encryption
+  * Both Automatic and Manual partitioning allow for the selection of full disk encryption with LUKS.
+
+    <img src=https://github.com/tabletseeker/mobian/blob/master/media/erase.png width=45% height=75%>
+    <img src=https://github.com/tabletseeker/mobian/blob/master/media/manual.png width=45% height=75%>
+
 #### Github Releases
 
 Multiple installer images can be found on the Github Release page. The postfix `-live` represents master and `-minimal` lightweight branch builds.
