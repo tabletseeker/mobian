@@ -4,6 +4,7 @@
   <img alt="Shows a black logo in light color mode and a white one in dark color mode.">
 </picture>
 
+
 A 100% Debian Linux, free, privacy focused, open-source operating system targeting x86-x64 touch devices, designed to liberate users from any kind of Google or third party surveilance, data collection and security concerns. This fork only uses official Debian sources, meaning no third party repositories, packages or code of any kind, while granting users complete control over every single package that is installed. The native implementation of custom kernels with the included build recipes enables support for almost any brand/model of x86-x64 tablet or lap-top, such as Surface Pro 3-10, Zenbook, Thinkpad, Chromebook etc.  and a range of ARM phones. Additionally, custom or deb packages and files of any kind can also be included. The mobian build-script produces personalized images, with unlimited customization of any available setting and device behavior.
 
 <img src=https://github.com/tabletseeker/mobian/blob/master/media/1.png width=100% height=100%>
@@ -110,6 +111,12 @@ This repo features two branches, which produce different installer images.
     <img src=https://github.com/tabletseeker/mobian/blob/master/media/install3.png width=45% height=75%>
     <img src=https://github.com/tabletseeker/mobian/blob/master/media/install4.png width=45% height=75%>
     <img src=https://github.com/tabletseeker/mobian/blob/master/media/install5.png width=45% height=75%>
+
+4. Encryption
+  * Both Automatic and Manual partitioning allow for the selection of full disk encryption with LUKS.
+
+    <img src=https://github.com/tabletseeker/mobian/blob/master/media/erase.png width=45% height=75%>
+    <img src=https://github.com/tabletseeker/mobian/blob/master/media/manual.png width=45% height=75%>
 
 #### Github Releases
 
