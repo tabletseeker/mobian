@@ -15,6 +15,7 @@ actions:
       - locales
       - lvm2
       - ca-certificates
+      - cryptsetup
 
       # --- Environment ---
       - cage
