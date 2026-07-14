@@ -11,6 +11,7 @@ actions:
     recommends: false
     description: Install packages for full disk encryption
     packages:
+      - cryptsetup
       - cryptsetup-initramfs
       {{ if eq $debian_suite "bookworm" }}
       # Standard Bookworm mobile unlock path
