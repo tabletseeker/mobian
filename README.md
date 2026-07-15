@@ -4,7 +4,7 @@
   <img alt="Shows a black logo in light color mode and a white one in dark color mode.">
 </picture>
 
-[![License](https://img.shields.io/badge/LICENSE-GPL3-2f3542?style=for-the-badge&logo=unlicense&logoColor=white)](https://github.com/tabletseeker/mobian/blob/main/LICENSE) [![Stars](https://img.shields.io/github/stars/tabletseeker/mobian?style=for-the-badge&color=ffad1f&logo=macys&logoColor=white)](https://github.com/tabletseeker/mobian/stargazers) [![Issues](https://img.shields.io/github/issues/tabletseeker/mobian?style=for-the-badge&color=ff4757&logo=helpdesk&logoColor=white)](https://github.com/tabletseeker/mobian/issues) [![CI Status](https://img.shields.io/badge/CI-PASSING-2ed573?style=for-the-badge&logo=bilibili&logoColor=white)](https://github.com/tabletseeker/mobian/actions) [![Discussions](https://img.shields.io/badge/DISCUSSIONS-ACTIVE-1e90ff?style=for-the-badge&logo=livechat&logoColor=white)](https://github.com/tabletseeker/mobian/discussions) [![Release](https://img.shields.io/badge/RELEASE-V2026.04-70a1ff?style=for-the-badge&logo=github&logoColor=white)](https://github.com/tabletseeker/mobian/releases)
+[![License](https://img.shields.io/badge/LICENSE-GPL3-2f3542?style=for-the-badge&logo=unlicense&logoColor=white)](https://github.com/tabletseeker/mobian/blob/main/LICENSE) [![Stars](https://img.shields.io/github/stars/tabletseeker/mobian?style=for-the-badge&color=ffaa00&logo=macys&logoColor=white)](https://github.com/tabletseeker/mobian/stargazers) [![Issues](https://img.shields.io/github/issues/tabletseeker/mobian?style=for-the-badge&color=2ed573&logo=helpdesk&logoColor=white)](https://github.com/tabletseeker/mobian/issues) [![CI Status](https://img.shields.io/badge/CI-PASSED-2ed573?style=for-the-badge&logo=bilibili&logoColor=white)](https://github.com/tabletseeker/mobian/actions) [![Discussions](https://img.shields.io/badge/DISCUSSIONS-ACTIVE-1e90ff?style=for-the-badge&logo=livechat&logoColor=white)](https://github.com/tabletseeker/mobian/discussions) [![Release](https://img.shields.io/badge/RELEASE-V2026.04-ff4757?style=for-the-badge&logo=github&logoColor=white)](https://github.com/tabletseeker/mobian/releases)
 
 A 100% Debian Linux, free, privacy focused, open-source operating system targeting x86-x64 touch devices, designed to liberate users from any kind of Google or third party surveilance, data collection and security concerns. This fork only uses official Debian sources, meaning no third party repositories, packages or code of any kind, while granting users complete control over every single package that is installed. The native implementation of custom kernels with the included build recipes enables support for almost any brand/model of x86-x64 tablet or lap-top, such as Surface Pro 3-10, Zenbook, Thinkpad, Chromebook etc.  and a range of ARM phones. Additionally, custom or deb packages and files of any kind can also be included. The mobian build-script produces personalized images, with unlimited customization of any available setting and device behavior.
 
@@ -75,7 +75,7 @@ A 100% Debian Linux, free, privacy focused, open-source operating system targeti
 
 #### Installer Image
 
-By using option `-o` during building, you can produce a Mobian installer image that contains a basic Phosh environemnt and calamares to install the filesystem.
+By using option `-o` during building, you can produce a Mobian installer image that contains a basic Phosh environment and calamares to install the filesystem.
 
 This repo features two branches, which produce different installer images.
 
