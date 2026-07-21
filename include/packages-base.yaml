@@ -16,13 +16,14 @@ actions:
       - openssh-server
 {{ end }}
       # Reason for this: it's @a-wai's preferred editor
-      - vim
+#      - vim
       # In case phosh list is trimmed and dependency lost 
       - libva2
       # mobian-base
       - alsa-ucm-conf
       - alsa-utils
       - apt-utils
+      - iproute2
       - busybox
       - callaudiod
       - ca-certificates
