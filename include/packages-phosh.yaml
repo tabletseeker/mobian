@@ -16,73 +16,73 @@ actions:
       - feedbackd-device-themes
       - at-spi2-core
       - iio-sensor-proxy
-      - fonts-noto
-      - fonts-noto-cjk
-      - fonts-noto-color-emoji
-      - fonts-noto-mono
+#     - fonts-noto
+#     - fonts-noto-cjk
+#     - fonts-noto-color-emoji
+#     - fonts-noto-mono
       - fonts-noto-ui-core
 #     - mesa-vdpau-drivers
       - wayland-protocols
       - libgdk-pixbuf2.0-bin
       - libcanberra-gtk3-module
       - gnome-themes-extra-data
-      - xdg-desktop-portal-gtk
+#     - xdg-desktop-portal-gtk
       - xdg-desktop-portal-wlr
       - xdg-user-dirs
       # mobian-tweaks-phosh
       - dconf-cli
       - feedbackd
       # mobian-phosh-extras
-      - fwupd
+#     - fwupd
       - gthd
-      - qtwayland5
-      - qt6-wayland
+#     - qtwayland5
+#     - qt6-wayland
       # mobian-multimedia
-      - ffmpeg
+#     - ffmpeg
       - gstreamer1.0-gl
       - gstreamer1.0-nice
       - gstreamer1.0-pipewire
       - gstreamer1.0-plugins-good
       - pipewire-libcamera
-      - rygel
-      - cracklib-runtime # needed for pw change in UI, but g-c-c only recommends it
+#     - rygel
+      - cracklib-runtime
       - chatty
-      - endeavour
-      - firefox-esr
-      - geary
+#     - endeavour
+#     - firefox-esr
+#     - geary
       - gnome-calculator
-      - gnome-calendar
+#     - gnome-calendar
       - gnome-console
-      - gnome-maps
-      - gnome-software
-      - gnome-sound-recorder
+#     - gnome-maps
+#     - gnome-software
+#     - gnome-sound-recorder
       - gnome-text-editor
       - gnome-usage
-      - gnome-weather
-      - lollypop
+#     - gnome-weather
+#     - lollypop
       - phosh-mobile-settings
       - phosh-plugins
-      - phosh-tour
+#     - phosh-tour
       - portfolio-filemanager
       - powersupply-gtk
 
       # Conditional Release Packages      
       {{ if eq $debian_suite "bookworm" }}
       # Bookworm (Stable)
-      - network-manager-gnome
+#     - network-manager-gnome
       - eog
-      - evince
-      - gnome-backgrounds
+#     - evince
+#     - gnome-backgrounds
       {{ else }}
       # Trixie (stable) and Forky (testing)
-      - network-manager-applet
+#     - network-manager-applet
       - loupe
-      - papers
+#     - papers
       - phrog
       - phosh-wallpapers
       - sound-theme-phosh
       - libspa-0.2-libcamera
-      - gnome-software-plugin-deb
+#     - gnome-software-plugin-deb
 #     - gnome-software-plugin-flatpak
       {{ end }}
       #Sid Exceptions
