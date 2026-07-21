@@ -29,12 +29,12 @@ actions:
       - amd64-microcode
       - firmware-amd-graphics
       - firmware-misc-nonfree
-      - atmel-firmware
+#     - atmel-firmware
       - bluez-firmware
-      - dahdi-firmware-nonfree
-      - firmware-ast
+#     - dahdi-firmware-nonfree
+#     - firmware-ast
       - firmware-atheros
-      - firmware-bnx2
+#     - firmware-bnx2
 #     - firmware-bnx2x
       - firmware-brcm80211
 #     - firmware-cavium
@@ -47,9 +47,9 @@ actions:
 #     - firmware-netxen
 #     - firmware-qlogic
       - firmware-realtek
-      - firmware-siano
+#     - firmware-siano
       - firmware-sof-signed
-      - firmware-zd1211
+#     - firmware-zd1211
       {{ end }}
 
       # Conditional Release Packages
@@ -58,6 +58,6 @@ actions:
       {{ else }}
       # Sid and Forky
       - firmware-intel-graphics
-      - firmware-cirrus
-      - firmware-marvell-prestera
+#     - firmware-cirrus
+#     - firmware-marvell-prestera
       {{ end }}
