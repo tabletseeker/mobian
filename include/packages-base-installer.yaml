@@ -65,7 +65,6 @@ actions:
       - plymouth-label
       - systemd-timesyncd
       - gnome-keyring
-      - network-manager-gnome
       - squeekboard
       - gnome-themes-extra-data
       - at-spi2-core
@@ -81,8 +80,10 @@ actions:
       - libkf6coreaddons6
       {{ else }}
       # Sid and Forky
+      - nm-connection-editor
+      - network-manager-applet
       - libkpmcore13
-      - libyaml-cpp0.8
+      - libyaml-cpp0.9
       - libkf6coreaddons6
       {{ end }}
 
