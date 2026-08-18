@@ -84,7 +84,7 @@ actions:
       {{ else }}
       # Sid and Forky
       - libkpmcore13
-      - libyaml-cpp0.8
+      - libyaml-cpp0.9
       - libkf6coreaddons6
       - libsfdo0
       {{ end }}
