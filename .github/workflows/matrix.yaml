@@ -4,6 +4,9 @@ on:
   push:
     tags:
       - 'v*'
+  schedule:
+    # ⏱️ Runs every Friday at 00:00 UTC (Midnight)
+    - cron: '0 0 * * 5'      
   workflow_dispatch:
     inputs:
       build_regular:
