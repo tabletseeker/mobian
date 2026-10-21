@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/tabletseeker/mobian/blob/master/media/logo_dark.png" width=64% height=58%>
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/tabletseeker/mobian/blob/master/media/logo_light.png" width=64% height=58%>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/tabletseeker/mobian/blob/master/media/logo_light.png" width=64% height=58%>
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/tabletseeker/mobian/blob/master/media/logo_dark.png" width=64% height=58%>
   <img alt="Shows a black logo in light color mode and a white one in dark color mode.">
 </picture>
 
