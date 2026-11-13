@@ -119,7 +119,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y debos bmap-tools squashfs-tools-ng xz-utils tar qemu-user-static wget jq
+          sudo apt-get install -y debos bmap-tools squashfs-tools-ng xz-utils tar qemu-user-binfmt wget jq
 
       - name: Process Custom Kernel
         env:
